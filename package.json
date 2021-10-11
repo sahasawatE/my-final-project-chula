@@ -1,0 +1,71 @@
+{
+  "name": "final",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/styles": "^4.11.4",
+    "@mui/material": "^5.0.0",
+    "@phuocng/react-pdf-viewer": "^1.7.0",
+    "@react-pdf-viewer/core": "^2.8.0",
+    "@react-pdf-viewer/get-file": "^2.8.0",
+    "@react-pdf/renderer": "^2.0.19",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "antd": "^4.16.13",
+    "axios": "^0.21.1",
+    "b64-to-blob": "^1.2.19",
+    "bootstrap": "^5.1.0",
+    "class-scheduler": "^1.2.1",
+    "filepond": "^4.29.1",
+    "filepond-plugin-file-validate-type": "^1.2.6",
+    "list-files": "^1.1.4",
+    "list-react-files": "^0.2.0",
+    "pdf-viewer-reactjs": "^2.2.3",
+    "pdfjs-dist": "^2.6.347",
+    "plyr-react": "^3.2.0",
+    "react": "^17.0.2",
+    "react-bootstrap": "^2.0.0-beta.6",
+    "react-bootstrap-date-picker": "^5.1.0",
+    "react-css-blur": "^1.1.1",
+    "react-datetime-picker": "^3.4.0",
+    "react-dom": "^17.0.2",
+    "react-filepond": "^7.1.1",
+    "react-modal": "^3.14.3",
+    "react-pdf": "^5.3.2",
+    "react-read-pdf": "^2.0.9",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "react-tabs": "^3.2.2",
+    "redux": "^4.1.1",
+    "school-calendar-react": "^1.0.1",
+    "video-react": "^0.14.1",
+    "web-vitals": "^1.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
