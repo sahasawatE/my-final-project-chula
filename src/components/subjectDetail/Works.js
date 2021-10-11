@@ -374,11 +374,16 @@ export default function Works(props) {
                         setReadMore(false);
                         setStudentWorkFiles([]);
                     }}>
-                        <Modal.Header closeButton>{selectWork.Work_Name}</Modal.Header>
+                            <Modal.Header closeButton>
+                                <div style={{display:'flex',flexDirection:'row'}}>
+                                    <Typography>{selectWork.Work_Name}</Typography>
+                                    <Typography style={{ paddingLeft: '16px', color: '#9A9A9A' }}>({selectWork.Score} คะแนน)</Typography>
+                                </div>
+                            </Modal.Header>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             <Grid container direction='column'>
                                 <Grid container>
-                                    <Grid item xs={12} style={{maxHeight:'240px', overflow:'scroll'}}>
+                                    <Grid item xs={12} style={{maxHeight:'32vh', overflow:'scroll'}}>
                                         {selectWork.Work_Detail.length > 250 ?
                                         <Typography>{readMore ? 
                                             selectWork.Work_Detail 
@@ -390,7 +395,7 @@ export default function Works(props) {
                                         }
                                     </Grid>
                                 </Grid>
-                                <div>
+                                <div style={{paddingBottom:'0.5rem'}}>
                                     {selectWork.Work_Detail.length > 250 ? 
                                     <div style={{display:'flex',justifyContent:'flex-end'}}>
                                         <Button color='primary' onClick={() => setReadMore(!readMore)}>{readMore ? 'ย่อ' : 'อ่านต่อ'}</Button>
@@ -399,7 +404,7 @@ export default function Works(props) {
                                     null
                                     }
                                 </div>
-                                <div>
+                                <div style={{paddingBottom:'0.5rem'}}>
                                     {studentWorkFiles.map((value,index) => {
                                         return(
                                             <div key={`workFile${value.Work_File_id}Index${index}`}>
@@ -409,6 +414,39 @@ export default function Works(props) {
                                             </div>
                                         )
                                     })}
+                                </div>
+                                <div style={{paddingBottom:'0.5rem', display:'flex', justifyContent:'flex-end'}}>
+                                        <Typography style={{ color: '#9A9A9A', paddingRight:'0.5rem' }}>ส่งก่อน {selectWork.End.split('T')[0].split('-')[2] + '/' + selectWork.End.split('T')[0].split('-')[1] + '/' + selectWork.End.split('T')[0].split('-')[0]}</Typography>
+                                        <Typography style={{ color: '#9A9A9A' }}>เวลา {selectWork.End.split('T')[1]}</Typography>
+                                </div>
+                                <div>
+                                    {/* not complete yet */}
+                                    <FilePond.FilePond
+                                        files={workFile}
+                                        onupdatefiles={setWorkFile}
+                                        allowMultiple={true}
+                                        maxFiles={3}
+                                        allowDrop
+                                        acceptedFileTypes={['application/pdf','image/*']}
+                                        allowRemove={false}
+                                        name="file"
+                                        credits={false}
+                                        onprocessfilerevert={(f) => {
+                                            api.delete('/teacher/deleteOnePrepare',{
+                                                data : {
+                                                    path : f.file.name,
+                                                    Room_id: props.subject.Room_id,
+                                                    Teacher_id: props.user.Teacher_id,
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Work_Name: workName
+                                                }
+                                            }).then(console.log('deleted')).catch(err => console.log(err))
+                                        }}
+                                        server={{
+                                            process : `http://localhost:3001/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`
+                                        }}
+                                        labelIdle='ลากและวางงานของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
+                                    />
                                 </div>
                             </Grid>
                         </Modal.Body>
