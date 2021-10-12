@@ -1,7 +1,9 @@
 import react from 'react';
-import { Button, Grid, ListItem, ListItemText, List } from "@material-ui/core";
+import { Button, Grid, ListItem, ListItemText, List, Collapse, IconButton } from "@material-ui/core";
 import axios from 'axios';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
+import AttachFileIcon from '@material-ui/icons/AttachFile';
 import { Modal } from 'react-bootstrap';
 import * as FilePond from 'react-filepond';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -92,6 +94,9 @@ export default function Documents(props){
     }, [props.user,props.subject]);
 
     const [uploadFiles,setUploadFiles] = react.useState([]);
+    const [addFile, setAddFile] = react.useState(false);
+    const [addFolder, setAddFolder] = react.useState(false);
+    const [openBackDrop, setOpenBackDrop] = react.useState(false);
 
     return(
 
@@ -100,24 +105,43 @@ export default function Documents(props){
                 {subject ? 
                     role === 'teacher' ? 
                         <div style={{width:'90%'}} className='pdf-container'>
-                            <div>
-                                <FilePond.FilePond
-                                    files={uploadFiles}
-                                    onupdatefiles={setUploadFiles}
-                                    allowMultiple={true}
-                                    maxFiles={3}
-                                    acceptedFileTypes={['application/pdf']}
-                                    allowDrop
-                                    allowRemove={false}
-                                    server={`http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}`}
-                                    name="file"
-                                    credits={false}
-                                    onprocessfiles={() => {
-                                        getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id);
-                                        setUploadFiles([]);
-                                    }}
-                                    labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
-                                />
+                            <div style={{paddingBottom:'0.5rem'}}>
+                                <div style={{display:'flex', justifyContent:'flex-end'}}>
+                                    <IconButton onClick={() => {
+                                        setAddFolder(!addFolder);
+                                        setAddFile(false);
+                                    }}><CreateNewFolderIcon /></IconButton>
+                                    <IconButton onClick={() => {
+                                        setAddFile(!addFile);
+                                        setAddFolder(false);
+                                    }}><AttachFileIcon /></IconButton>
+                                </div>
+                                <div>
+                                    <Collapse in={addFile}>
+                                        <FilePond.FilePond
+                                            files={uploadFiles}
+                                            onupdatefiles={setUploadFiles}
+                                            allowMultiple={true}
+                                            maxFiles={3}
+                                            acceptedFileTypes={['application/pdf']}
+                                            allowDrop
+                                            allowRemove={false}
+                                            server={`http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}`}
+                                            name="file"
+                                            credits={false}
+                                            onprocessfiles={() => {
+                                                getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id);
+                                                setUploadFiles([]);
+                                            }}
+                                            labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
+                                        />
+                                    </Collapse>
+                                </div>
+                                <div>
+                                    <Collapse in={addFolder}>
+                                        hok
+                                    </Collapse>
+                                </div>
                             </div>
                             {files.length === 0 ?
                                 'ยังไม่มีเอกสารตอนนี้'

@@ -183,7 +183,7 @@ export default function Teacher(){
                 </Grid>
 
                 <div>
-                    <Modal centered show={postModal} onHide={() => setPostModal(false)}>
+                    <Modal centered backdrop="static" show={postModal} onHide={() => setPostModal(false)}>
                         <Modal.Header closeButton>สร้างกระทู้</Modal.Header>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             <Grid container direction="row">
@@ -215,7 +215,7 @@ export default function Teacher(){
                 </div>
                 {threadData ? 
                 <div>
-                    <Modal centered show={showThread} size="lg" aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                    <Modal centered show={showThread} backdrop="static" size="lg" aria-labelledby="contained-modal-title-vcenter" onHide={() => {
                         setAnswer('');
                         setShowThread(false)
                     }}>

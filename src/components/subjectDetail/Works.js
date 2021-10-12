@@ -116,9 +116,39 @@ export default function Works(props) {
 
     //teacher
     if(user.Teacher_id){
+        const [selectWork, setSelectWork] = react.useState(null);
+        const [teacherWorkModal, setTeacherWorkModal] = react.useState(false);
+        const [readMore, setReadMore] = react.useState(false);
+        const [teacherWorkFiles, setTeacherWorkFiles] = react.useState([]);
+        function teacherClickWorkFile(pathFile, type) {
+            api.post('/subject/file', {
+                path: pathFile,
+                type: type
+            }).then(result => {
+                if (type === 'pdf') {
+                    var blob = b64toBlob(result.data, "application/pdf")
+                    var blobUrl = URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank');
+                }
+                else if (type === 'image') {
+                    blob = b64toBlob(result.data, "image/*")
+                    blobUrl = URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank');
+                }
+            }).catch(err => console.log(err))
+        }
         react.useEffect(() => {
             createWorkRef.current?.scroll({ top: createWorkRef.current.scrollHeight, behavior: 'smooth' }) 
         },[workFile])
+        react.useEffect(() => {
+            if (selectWork) {
+                api.post('/subject/allWorkFiles', {
+                    File_Path: selectWork.File_Path
+                }).then(res => {
+                    setTeacherWorkFiles(res.data)
+                }).catch(err => console.log(err))
+            }
+        }, [selectWork])
 
         react.useEffect(() => {
             if(selectSubject){
@@ -143,7 +173,10 @@ export default function Works(props) {
                         return(
                             <Grid key={index} container justifyContent="center">
                                 <Grid item xs={10}>
-                                    <ListItem button onClick={() => console.log(value)}>
+                                    <ListItem button onClick={() => {
+                                        setSelectWork(value);
+                                        setTeacherWorkModal(true);
+                                    }}>
                                         <ListItemText key={index} primary={value.Work_Name} />
                                     </ListItem>
                                 </Grid>
@@ -165,9 +198,16 @@ export default function Works(props) {
                 </List>
                 }
 
-                {/* modal */}
+                {/*create modal */}
                 <div>
-                    <Modal centered show={modalCreateWork} onHide={() => setModalCreateWork(false)}>
+                    <Modal centered backdrop="static" show={modalCreateWork} onHide={() => {
+                        if (workFile.length === 0) {
+                            deletePrepare([])
+                        }
+                        else {
+                            deletePrepare(workFile)
+                        }
+                    }}>
                         <Modal.Header closeButton>สร้างงาน</Modal.Header>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center'}}>
                             <Grid container direction="column" justifyContent="space-between">
@@ -243,7 +283,7 @@ export default function Works(props) {
                         <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
                             <Button variant="outlined" color="secondary" onClick={() => {
                                 if(workFile.length === 0){
-                                    deletePrepare(false)
+                                    deletePrepare([])
                                 }
                                 else{
                                     deletePrepare(workFile)
@@ -268,7 +308,7 @@ export default function Works(props) {
 
                 {/* deleteModal */}
                 <div>
-                    <Modal centered show={deleteModal}>
+                    <Modal centered backdrop="static" show={deleteModal}>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             คุณต้องการที่จะลบเนื้อหานี้หรือไม่ ?
                         </Modal.Body>
@@ -281,7 +321,70 @@ export default function Works(props) {
 
                 {/* work modal */}
                 <div>
-                    
+                    {selectWork ?
+                        <Modal centered show={teacherWorkModal} backdrop="static" onHide={() => {
+                            setTeacherWorkModal(false)
+                        }}>
+                            <Modal.Header closeButton>
+                                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Typography>{selectWork.Work_Name}</Typography>
+                                    <Typography style={{ paddingLeft: '16px', color: '#9A9A9A' }}>({selectWork.Score} คะแนน)</Typography>
+                                </div>
+                            </Modal.Header>
+                            <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
+                                <Grid container direction='column'>
+                                    <Grid container>
+                                        <Grid item xs={12} style={{ maxHeight: '32vh', overflow: 'scroll' }}>
+                                            {selectWork.Work_Detail.length > 250 ?
+                                                <Typography>{readMore ?
+                                                    selectWork.Work_Detail
+                                                    :
+                                                    selectWork.Work_Detail.slice(0, 248) + ' ...'
+                                                }</Typography>
+                                                :
+                                                <Typography>{selectWork.Work_Detail}</Typography>
+                                            }
+                                        </Grid>
+                                    </Grid>
+                                    <div style={{ paddingBottom: '0.5rem' }}>
+                                        {selectWork.Work_Detail.length > 250 ?
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                <Button color='primary' onClick={() => setReadMore(!readMore)}>{readMore ? 'ย่อ' : 'อ่านต่อ'}</Button>
+                                            </div>
+                                            :
+                                            null
+                                        }
+                                    </div>
+                                    <div style={{ paddingBottom: '0.5rem' }}>
+                                        {teacherWorkFiles.map((value, index) => {
+                                            return (
+                                                <div key={`workFile${value.Work_File_id}Index${index}`}>
+                                                    <Button style={{ width: '100%', display: 'flex', justifyContent: 'flex-start' }} onClick={() => teacherClickWorkFile(value.File_path, value.File_type)}>
+                                                        {value.File_path.split('\\').pop().split('/').pop()}
+                                                    </Button>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                    <div style={{ paddingBottom: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                        <Typography style={{ color: '#9A9A9A', paddingRight: '0.5rem' }}>ส่งก่อน {selectWork.End.split('T')[0].split('-')[2] + '/' + selectWork.End.split('T')[0].split('-')[1] + '/' + selectWork.End.split('T')[0].split('-')[0]}</Typography>
+                                        <Typography style={{ color: '#9A9A9A' }}>เวลา {selectWork.End.split('T')[1]}</Typography>
+                                    </div>
+                                    <div>
+                                        
+                                    </div>
+                                </Grid>
+                            </Modal.Body>
+                            <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
+                                <Button variant="outlined" color="secondary" onClick={() => {
+                                    setTeacherWorkModal(false)
+                                }}>ปิด</Button>
+                                <Button variant="outlined" color="primary" disabled>สร้าง</Button>
+                            </Modal.Footer>
+                        </Modal>
+                        :
+                        null
+                    }
                 </div>
             </div>
         );
@@ -369,7 +472,7 @@ export default function Works(props) {
                 {/* work modal */}
                 <div>
                     { selectWork ? 
-                    <Modal centered show={studentOpenWork} onHide={() => {
+                        <Modal centered backdrop="static" show={studentOpenWork} onHide={() => {
                         setStudentOpenWork(false);
                         setReadMore(false);
                         setStudentWorkFiles([]);
