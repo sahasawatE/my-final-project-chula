@@ -96,7 +96,7 @@ export default function Documents(props){
     const [uploadFiles,setUploadFiles] = react.useState([]);
     const [addFile, setAddFile] = react.useState(false);
     const [addFolder, setAddFolder] = react.useState(false);
-    const [openBackDrop, setOpenBackDrop] = react.useState(false);
+    // const [openBackDrop, setOpenBackDrop] = react.useState(false);
 
     return(
 
