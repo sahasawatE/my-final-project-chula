@@ -1,10 +1,14 @@
 import react from 'react';
-import { Button, Grid, ListItem, ListItemText, List, Collapse, IconButton } from "@material-ui/core";
+import { Button, Grid, ListItem, ListItemText, List, Collapse, Typography } from "@material-ui/core";
+import { Breadcrumbs } from '@mui/material'
 import axios from 'axios';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
-import AttachFileIcon from '@material-ui/icons/AttachFile';
-import { Modal } from 'react-bootstrap';
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import FolderIcon from '@material-ui/icons/Folder';
+import { Form, Modal } from 'react-bootstrap';
 import * as FilePond from 'react-filepond';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'filepond/dist/filepond.min.css'
@@ -18,6 +22,7 @@ var b64toBlob = require('b64-to-blob');
 
 //make a query and get subkect from localstorage
 export default function Documents(props){
+    const [dir,setDir] = react.useState('');
     FilePond.registerPlugin(FilePondPluginFileValidateType)
     const api = axios.create({
         baseURL: 'http://localhost:3001/'
@@ -26,17 +31,18 @@ export default function Documents(props){
     const subject = props.subject;
 
     const [files,setFiles] = react.useState([]);
+    const [folders, setFolders] = react.useState([]);
     const [role,setRole] = react.useState('teacher');
 
     // const [upload,setUpload] = react.useState(false);
 
     function getAllFileTeacher(roomId,teacherId,subjectId){
-        api.post('/teacher/allFiles',{
+        api.post('/teacher/allFolders',{
             Room_id : roomId,
             Teacher_id : teacherId,
             Subject_id : subjectId
         }).then(result => {
-            setFiles(result.data)
+            setFolders(result.data)
         }).catch(err => console.log(err))
     }
 
@@ -61,6 +67,7 @@ export default function Documents(props){
 
     const [dataDelete,setDataDelete] = react.useState('');
     const [showModal,setShowModal] = react.useState(false);
+    const [enterFolder,setEnterFolder] = react.useState([]);
 
     function deleteHandle(path){
         api.delete('/teacher/deleteFile',{
@@ -76,12 +83,55 @@ export default function Documents(props){
         .catch(err => console.log(err))
     }
 
+    function createFolder(name){
+        api.post('/subject/docCreateFolder',{
+            Room_id: props.subject.Room_id,
+            Subject_id: props.subject.Subject_id,
+            Teacher_id: props.user.Teacher_id, 
+            FolderName: name 
+        }).then(res => console.log(res.data)).catch(err => console.log(err))
+    }
+
+    function enterF(name){
+        var folder = [];
+        if(enterFolder.length === 0){
+            folder.push(name);
+            setEnterFolder(folder)
+            api.post('/subject/inFolder',{
+                Room_id : props.subject.Room_id,
+                Subject_id : props.subject.Subject_id,
+                Teacher_id : props.user.Teacher_id,
+                folders : name
+            }).catch(err => console.log(err))
+        }
+        else{
+            console.log(enterFolder)
+        }
+    }
+
+    // react.useEffect(() => {
+    //     if(enterFolder.length !== 0){
+    //         if(props.subject){
+    //             if(props.user.Teacher_id){
+    //                 api.post('/subject/inFolder', {
+    //                     Room_id: props.subject.Room_id,
+    //                     Subject_id: props.subject.Subject_id,
+    //                     Teacher_id: props.user.Teacher_id, 
+    //                 })
+    //             }
+    //         }
+    //     }
+    // },[enterFolder])
+
     react.useEffect(() => {
+        setEnterFolder('')
+        setFolders([]);
         if(props.user.Teacher_id){
             setRole('teacher');
 
             if(props.subject){
                 getAllFileTeacher(props.subject.Room_id,props.user.Teacher_id,props.subject.Subject_id);
+                setDir(`/Users/yen/Desktop/FinalProject/component/final/src/components/uploads/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/`);
             }
         }
         else{
@@ -96,6 +146,7 @@ export default function Documents(props){
     const [uploadFiles,setUploadFiles] = react.useState([]);
     const [addFile, setAddFile] = react.useState(false);
     const [addFolder, setAddFolder] = react.useState(false);
+    const [folderName, setFolderName] = react.useState('');
     // const [openBackDrop, setOpenBackDrop] = react.useState(false);
 
     return(
@@ -105,16 +156,28 @@ export default function Documents(props){
                 {subject ? 
                     role === 'teacher' ? 
                         <div style={{width:'90%'}} className='pdf-container'>
-                            <div style={{paddingBottom:'0.5rem'}}>
-                                <div style={{display:'flex', justifyContent:'flex-end'}}>
-                                    <IconButton onClick={() => {
+                            <div>
+                                <Breadcrumbs aria-label="breadcrumb">
+                                    <Typography>{props.subject.Subject_id}</Typography>
+                                    {enterFolder.length === 0 ?
+                                        null
+                                    :
+                                        enterFolder.map((value,index) => {
+                                            return(<Typography key={`folderNo${index}`}>{value}</Typography>)
+                                        })
+                                    }
+                                </Breadcrumbs>
+                            </div>
+                            <div style={{paddingTop:'0.5rem'}}>
+                                <div style={{display:'flex', justifyContent:'center', paddingBottom:'1rem'}}>
+                                    <Button variant='text' style={{ width: '50%', color: addFolder ? '#4377ED' : 'gray'}} onClick={() => {
                                         setAddFolder(!addFolder);
                                         setAddFile(false);
-                                    }}><CreateNewFolderIcon /></IconButton>
-                                    <IconButton onClick={() => {
+                                    }}><CreateNewFolderIcon /> สร้างโฟเดอร์</Button>
+                                    <Button variant='text' style={{ width: '50%', color: addFile ? '#4377ED' : 'gray' }} onClick={() => {
                                         setAddFile(!addFile);
                                         setAddFolder(false);
-                                    }}><AttachFileIcon /></IconButton>
+                                    }}><UploadFileIcon /> แนบไฟล์ หรือ อัพโหลดไฟล์</Button>
                                 </div>
                                 <div>
                                     <Collapse in={addFile}>
@@ -139,43 +202,90 @@ export default function Documents(props){
                                 </div>
                                 <div>
                                     <Collapse in={addFolder}>
-                                        hok
+                                        <Grid container>
+                                            <Grid item xs={2} style={{display:'flex', justifyContent:'center'}}><FolderIcon fontSize='large'/></Grid>
+                                            <Grid item xs={10} style={{display:'flex', flexDirection:'row'}}>
+                                                <Form.Control style={{ width: '80%' }} type="text" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder="เขียนชื่อหัวข้อของงาน" />
+                                                {folderName.length === 0 ? 
+                                                <Button style={{ width: '10%' }} disabled><CheckIcon /></Button>
+                                                :
+                                                <Button style={{ width: '10%', color: '#18C042' }} onClick={() => createFolder(folderName)}><CheckIcon /></Button>
+                                                }
+                                                <Button style={{ width: '10%' }} color='secondary' onClick={() => {
+                                                    setFolderName('');
+                                                    setAddFolder(false);
+                                                }}><ClearIcon /></Button>   
+                                            </Grid>
+                                        </Grid>
                                     </Collapse>
                                 </div>
                             </div>
-                            {files.length === 0 ?
+                            {files.length === 0 && folders.length === 0 ?
                                 'ยังไม่มีเอกสารตอนนี้'
                                 :
-                                <List>
-                                    {files.map((value, index) => {
-                                        return (
-                                            <Grid key={index} container justifyContent="center">
-                                                <Grid item xs={10} onClick={() => getFile(files[index])}>
-                                                    <ListItem button>
-                                                        <ListItemText key={index} primary={value.split('\\').pop().split('/').pop()} />
-                                                    </ListItem>    
+                                <div>
+                                    {folders.length === 0 ? null : 
+                                    <List>
+                                        {folders.map((value, index) => {
+                                            const fname = value.split(dir)[1].split('/')[0]
+                                            return (
+                                                <Grid key={index} container justifyContent="center">
+                                                    <Grid item xs={10}>
+                                                        <ListItem button onClick={() => enterF(fname)}>
+                                                            <FolderIcon fontSize='large' />
+                                                            <ListItemText key={index} primary={fname} />
+                                                        </ListItem>
+                                                    </Grid>
+                                                    {/* <Grid item xs={2}>
+                                                        <Button
+                                                            style={{ height: '100%' }}
+                                                            color="secondary"
+                                                            onClick={() => {
+                                                                setDataDelete(value);
+                                                                setShowModal(!showModal)
+                                                            }
+                                                            }>
+                                                            <DeleteForeverIcon color="secondary" />
+                                                        </Button>
+                                                    </Grid> */}
                                                 </Grid>
-                                                <Grid item xs={2}>
-                                                    <Button 
-                                                        style={{height:'100%'}} 
-                                                        color="secondary" 
-                                                        onClick={() => {
-                                                            setDataDelete(value);
-                                                            setShowModal(!showModal)
-                                                        }
-                                                    }>
-                                                        <DeleteForeverIcon color="secondary"/>
-                                                    </Button>
+                                            );
+                                        })}
+                                    </List>
+                                    }
+                                    {files.length === 0 ? null : 
+                                    <List>
+                                        {files.map((value, index) => {
+                                            return (
+                                                <Grid key={index} container justifyContent="center">
+                                                    <Grid item xs={10} onClick={() => getFile(files[index])}>
+                                                        <ListItem button>
+                                                            <ListItemText key={index} primary={value.split('\\').pop().split('/').pop()} />
+                                                        </ListItem>    
+                                                    </Grid>
+                                                    <Grid item xs={2}>
+                                                        <Button 
+                                                            style={{height:'100%'}} 
+                                                            color="secondary" 
+                                                            onClick={() => {
+                                                                setDataDelete(value);
+                                                                setShowModal(!showModal)
+                                                            }
+                                                        }>
+                                                            <DeleteForeverIcon color="secondary"/>
+                                                        </Button>
+                                                    </Grid>
                                                 </Grid>
-                                            </Grid>
-                                        );
-                                    })}
-                                </List>
+                                            );
+                                        })}
+                                    </List>
+                                    }
+                                </div>
                             }
                         </div>
                     :
                     <div>
-                        {files.length === 0 ?
+                        {files.length === 0 || folders.length === 0 ?
                         'ยังไม่มีเอกสารตอนนี้'
                         :
                         <List>
