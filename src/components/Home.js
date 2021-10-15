@@ -52,6 +52,16 @@ export default function Home(props,{ forwardedRef }) {
 
     const [subject, setSubject] = react.useState([])
     const [queryTeacher, setQueryTeacher] = react.useState(null);
+    const [selectSubjectName, setSelectSubjectName] = react.useState('');
+
+    react.useEffect(() => {
+        if(selectSubject){
+            api.post('/subject/subjectDetail', {
+                Subject_id: selectSubject.name,
+                Room_id: selectSubject.room
+            }).then(res => setSelectSubjectName(res.data[0].Subject_name)).catch(err => console.log(err))
+        }
+    },[selectSubject])
 
     function getSubjectTime(){
         api.post('/subject/subjectTime',{
@@ -148,6 +158,9 @@ export default function Home(props,{ forwardedRef }) {
                 }
                 return null;
             })}
+            <div style={{display:'flex', width:'40%',marginLeft:'8vw',paddingBottom:'1rem'}}>
+                <Typography>{selectSubjectName}</Typography>
+            </div>
             <Grid container justifyContent="center" alignItems="center" direction="row">
                 <Grid item className='timetable' xs={7}>
                     <Paper className={classes.paperLeft}>

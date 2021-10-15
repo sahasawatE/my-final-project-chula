@@ -183,7 +183,11 @@ export default function Teacher(){
                 </Grid>
 
                 <div>
-                    <Modal centered backdrop="static" show={postModal} onHide={() => setPostModal(false)}>
+                    <Modal centered backdrop="static" show={postModal} onHide={() => {
+                        setPostModal(false);
+                        setTitle('');
+                        setQ('');
+                    }}>
                         <Modal.Header closeButton>สร้างกระทู้</Modal.Header>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             <Grid container direction="row">
