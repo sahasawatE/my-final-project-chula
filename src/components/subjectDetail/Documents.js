@@ -1,10 +1,11 @@
 import react from 'react';
-import { Button, Grid, ListItem, ListItemText, List, Collapse } from "@material-ui/core";
+import { Button, Grid, ListItem, ListItemText, List, Typography } from "@material-ui/core";
 import axios from 'axios';
+import {Tab, Tabs} from '@mui/material'
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
-import CheckIcon from '@mui/icons-material/Check';
-import ClearIcon from '@mui/icons-material/Clear';
+import AddIcon from '@mui/icons-material/Add';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import FolderIcon from '@material-ui/icons/Folder';
 import { Form, Modal } from 'react-bootstrap';
 import * as FilePond from 'react-filepond';
@@ -34,7 +35,10 @@ export default function Documents(props){
 
     // still bug
 
-    function getAllFileTeacher(roomId,teacherId,subjectId){
+    function getAllFileTeacher(roomId,teacherId,subjectId,noFolder){
+        if(noFolder){
+            createFolder('noFolder')
+        }
         api.post('/teacher/allFolders',{
             Room_id : roomId,
             Teacher_id : teacherId,
@@ -55,7 +59,7 @@ export default function Documents(props){
 
     function getFile(file){
         api.post('/teacher/file',{
-            filePath: file
+            filePath: `${dir}/${selectFolder.length === 0 ? 'noFolder' : selectFolder}/${file}`
         }).then(result => {
             var blob = b64toBlob(result.data, "application/pdf")
             var blobUrl = URL.createObjectURL(blob);
@@ -65,10 +69,10 @@ export default function Documents(props){
 
     const [dataDelete,setDataDelete] = react.useState('');
     const [deleteFolder, setDeleteFolder] = react.useState('');
-    const [showModal,setShowModal] = react.useState(false);
+    const [showModal, setShowModal] = react.useState(false);
     const [enterFolder,setEnterFolder] = react.useState(false);
     const [filesInFolder, setFilesInFolder] = react.useState([]);
-    const [folder, setFolder] = react.useState('');
+    const [selectFolder, setSelectFolder] = react.useState('');
 
     function deleteFolderHandle(path){
         api.delete('/teacher/deleteFile',{
@@ -80,7 +84,7 @@ export default function Documents(props){
             }
         })
         .then(setShowModal(false))
-        .then(getAllFileTeacher(props.subject.Room_id,props.user.Teacher_id,props.subject.Subject_id))
+        .then(getAllFileTeacher(props.subject.Room_id,props.user.Teacher_id,props.subject.Subject_id,uploadFileWithoutFolder))
         .catch(err => console.log(err))
     }
 
@@ -94,7 +98,7 @@ export default function Documents(props){
             }
         })
             .then(setShowModal(false))
-            .then(getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id))
+            .then(getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id,uploadFileWithoutFolder))
             .catch(err => console.log(err))
     }
 
@@ -105,30 +109,26 @@ export default function Documents(props){
             Teacher_id: props.user.Teacher_id, 
             FolderName: name 
         })
-        .then(getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id))
+        .then(setFolderCrete(true))
+        .then(setNewFolderName(name))
         .catch(err => console.log(err))
     }
 
     function enterF(name){
-        if(folder.length === 0){
-            setFolder(name);
-            api.post('/subject/inFolder',{
-                Room_id : props.subject.Room_id,
-                Subject_id : props.subject.Subject_id,
-                Teacher_id : props.user.Teacher_id,
-                folders : name
-            })
-            .then(res => {
-                if (res.data !== 'This path does not exits.'){
-                    setFilesInFolder(res.data[0].files)
-                }
-            })
-            .then(setEnterFolder(true))
-            .catch(err => console.log(err))
-        }
-        else{
-            console.log(name)
-        }
+        api.post('/subject/inFolder',{
+            Room_id : props.subject.Room_id,
+            Subject_id : props.subject.Subject_id,
+            Teacher_id : props.user.Teacher_id,
+            folders : name
+        })
+        .then(res => {
+            if (res.data !== 'This path does not exits.'){
+                setFilesInFolder(res.data)
+            }
+        })
+        .then(setSelectFolder(name))
+        .then(setEnterFolder(true))
+        .catch(err => console.log(err))
     }
 
     react.useEffect(() => {
@@ -138,8 +138,8 @@ export default function Documents(props){
             setRole('teacher');
 
             if(props.subject){
-                getAllFileTeacher(props.subject.Room_id,props.user.Teacher_id,props.subject.Subject_id);
-                setDir(`/Users/yen/Desktop/FinalProject/component/final/src/components/uploads/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/`);
+                getAllFileTeacher(props.subject.Room_id,props.user.Teacher_id,props.subject.Subject_id,uploadFileWithoutFolder);
+                setDir(`/Users/yen/Desktop/FinalProject/component/final/src/components/uploads/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}`);
             }
         }
         else{
@@ -152,195 +152,349 @@ export default function Documents(props){
     }, [props.user,props.subject]);
 
     const [uploadFiles,setUploadFiles] = react.useState([]);
-    const [addFolder, setAddFolder] = react.useState(false);
     const [folderName, setFolderName] = react.useState('');
+    const [createContent, setCreateContent] = react.useState(false);
+    const [tabValue, setTabValue] = react.useState(0);
+    const [folderCreate, setFolderCrete] = react.useState(false);
+    const [newFolderName, setNewFolderName] = react.useState('')
+    const [finishUploadFile, setFinistUploadFile] = react.useState(false);
+    const [uploadFileWithoutFolder, setUploadFileWithoutFolder] = react.useState(false);
+    const [noFolderFiles, setNoFolderFiles] = react.useState([]);
 
-    return(
+    react.useEffect(() => {
+        if (props.subject) {
+            api.post('/subject/inFolder', {
+                Room_id: props.subject.Room_id,
+                Subject_id: props.subject.Subject_id,
+                Teacher_id: props.user.Teacher_id,
+                folders: 'noFolder'
+            })
+                .then(res => {
+                    if (res.data !== 'This path does not exits.') {
+                        setNoFolderFiles(res.data)
+                    }
+                })
+                .catch(err => console.log(err))
+        }
+    }, [props.subject, createContent])
 
-        <div>
-            <Grid container justifyContent="center">
-                {subject ? 
-                    role === 'teacher' ? 
-                        <div style={{width:'90%'}} className='pdf-container'>
-                            <div style={{paddingTop:'0.5rem'}}>
-                                <div style={{display:'flex', justifyContent:'center', paddingBottom:'1rem'}}>
-                                    <Button variant='text' style={{ width: '100%', color: addFolder ? '#4377ED' : 'gray'}} onClick={() => {
-                                        setAddFolder(!addFolder);
-                                    }}><CreateNewFolderIcon /> สร้างโฟเดอร์</Button>
-                                </div>
-                                <div>
-                                    <Collapse in={addFolder}>
-                                        <Grid container>
-                                            <Grid item xs={2} style={{display:'flex', justifyContent:'center'}}><FolderIcon fontSize='large'/></Grid>
-                                            <Grid item xs={10} style={{display:'flex', flexDirection:'row'}}>
-                                                <Form.Control style={{ width: '80%' }} type="text" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder="เขียนชื่อหัวข้อของงาน" />
-                                                {folderName.length === 0 ? 
-                                                <Button style={{ width: '10%' }} disabled><CheckIcon /></Button>
-                                                :
-                                                <Button style={{ width: '10%', color: '#18C042' }} onClick={() => {
-                                                    createFolder(folderName);
-                                                    setFolderName('');
-                                                    setAddFolder(false);
-                                                }}><CheckIcon /></Button>
-                                                }
-                                                <Button style={{ width: '10%' }} color='secondary' onClick={() => {
-                                                    setFolderName('');
-                                                    setAddFolder(false);
-                                                }}><ClearIcon /></Button>   
+    if(subject){
+        if(role === 'teacher'){
+            return(
+                <Grid container justifyContent='center' direction='column'>
+                    <Button variant='text' style={{ width: '100%', color: '#4377ED' }} onClick={() => setCreateContent(true)}>สร้างเนื้อหา</Button>
+                    <br/>
+                    <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%'}}>
+                        {folders.length === 0 ?
+                            <Typography>ว่างเปล่า</Typography>
+                            :
+                            <List style={{width: '90%' }}>
+                                {noFolderFiles.length !== 0 && noFolderFiles.map((value,index) => {
+                                    return (
+                                        <Grid key={`folderNo${index}`} container direction='row'>
+                                            <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
+                                                <ListItem button onClick={() => {
+                                                    getFile(value.File_Path.split('/').at(-1));
+                                                }}>
+                                                    <InsertDriveFileIcon />
+                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('/').at(-1)}</ListItemText>
+                                                </ListItem>
+                                            </Grid>
+                                            <Grid item xs={2}>
+                                                <Button style={{ height: '100%' }} color='secondary'><DeleteForeverIcon /></Button>
                                             </Grid>
                                         </Grid>
-                                    </Collapse>
-                                </div>
-                            </div>
-                            {files.length === 0 && folders.length === 0 ?
-                                'ยังไม่มีเอกสารตอนนี้'
-                                :
-                                <div>
-                                    {folders.length === 0 ? null : 
-                                    <List>
-                                        {folders.map((value, index) => {
-                                            const fname = value.split(dir)[1].split('/')[0]
-                                            return (
-                                                <Grid key={index} container justifyContent="center">
-                                                    <Grid item xs={10}>
-                                                        <ListItem button onClick={() => enterF(fname)}>
-                                                            <FolderIcon fontSize='large' />
-                                                            <ListItemText key={index} primary={fname} />
-                                                        </ListItem>
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        <Button
-                                                            style={{ height: '100%' }}
-                                                            color="secondary"
-                                                            onClick={() => {
-                                                                setDeleteFolder(value);
-                                                                setShowModal(!showModal)
-                                                            }
-                                                            }>
-                                                            <DeleteForeverIcon color="secondary" />
-                                                        </Button>
-                                                    </Grid>
+                                    );
+                                })}
+                                {folders.map((value,index) => {
+                                    if (value.split('/').at(-1) !== 'noFolder'){
+                                        return (
+                                            <Grid key={`folderNo${index}`} container direction='row'>
+                                                <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
+                                                    <ListItem button onClick={() => {
+                                                        enterF(value.split('/').at(-1))
+                                                    }}>
+                                                        <FolderIcon />
+                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
+                                                    </ListItem>
                                                 </Grid>
-                                            );
-                                        })}
-                                    </List>
-                                    }
-                                    {files.length === 0 ? null : 
-                                    <List>
-                                        {files.map((value, index) => {
-                                            return (
-                                                <Grid key={index} container justifyContent="center">
-                                                    <Grid item xs={10} onClick={() => getFile(files[index])}>
-                                                        <ListItem button>
-                                                            <ListItemText key={index} primary={value.split('\\').pop().split('/').pop()} />
-                                                        </ListItem>    
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        <Button 
-                                                            style={{height:'100%'}} 
-                                                            color="secondary" 
-                                                            onClick={() => {
-                                                                setDataDelete(value);
-                                                                setShowModal(!showModal)
-                                                            }
-                                                        }>
-                                                            <DeleteForeverIcon color="secondary"/>
-                                                        </Button>
-                                                    </Grid>
+                                                <Grid item xs={2}>
+                                                    <Button style={{ height: '100%' }} color='secondary'><DeleteForeverIcon /></Button>
                                                 </Grid>
-                                            );
-                                        })}
-                                    </List>
+                                            </Grid>
+                                        );
                                     }
-                                </div>
-                            }
-                        </div>
-                    :
+                                })}
+                            </List>
+                        }
+                    </Grid>
+
+                    {/* Modal create content */}
                     <div>
-                        {files.length === 0 || folders.length === 0 ?
-                        'ยังไม่มีเอกสารตอนนี้'
-                        :
-                        <List>
-                            {files.map((value, index) => {
-                                return (
-                                    <Grid key={index} container>
+                        <Modal centered show={createContent} backdrop="static">
+                            <Modal.Body>
+                                <Grid container direction='column'>
+                                    <Tabs variant="fullWidth" value={tabValue} onChange={(e, v) => {
+                                        setTabValue(v);
+                                        return e
+                                    }} aria-label="basic tabs example">
+                                        <Tab label="สร้างโฟเดอร์" />
+                                        <Tab label="อัพโหลดเอกสาร" />
+                                    </Tabs>
+                                    <br/>
+                                    {tabValue === 0 ?
+                                    <Grid container direction='column'>
+                                        {newFolderName.length === 0 ?
+                                        <Grid item xs={12} style={{display:'flex', flexDirection:'row'}}>
+                                            <CreateNewFolderIcon fontSize='large' style={{ color: 'gray', marginRight: '1rem' }} />
+                                            <Form.Control style={{ width: '75%', height:'2.5rem' }} type="text" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder="ชื่อโฟลเดอร์" />
+                                            {folderName.length === 0 ? 
+                                            <Button style={{height:'2.5rem'}} disabled><AddIcon fontSize='large'/></Button>
+                                            :
+                                            <Button style={{height:'2.5rem',color:'#4377ED'}} onClick={() => {
+                                                createFolder(folderName);
+                                                setFolderName('');
+                                            }}><AddIcon fontSize='large'/></Button>
+                                            }
+                                        </Grid>
+                                        :
+                                        null
+                                        }
                                         <Grid item xs={12}>
-                                            <ListItem button>
-                                                <ListItemText key={index} onClick={() => getFile(files[index])} primary={value.split('\\').pop().split('/').pop()} />
-                                            </ListItem>    
+                                        {folderCreate &&
+                                            <div>
+                                                <div style={{display:'flex' , flexDirection:'row'}}>
+                                                    <FolderIcon fontSize='large' style={{color:'gray'}} />
+                                                    <Typography style={{marginTop:'0.5rem',paddingLeft:'0.5rem'}}>{newFolderName}</Typography>
+                                                </div>
+                                                <br/>
+                                                <FilePond.FilePond
+                                                    files={uploadFiles}
+                                                    onupdatefiles={setUploadFiles}
+                                                    allowMultiple={true}
+                                                    maxFiles={3}
+                                                    acceptedFileTypes={['application/pdf']}
+                                                    allowDrop
+                                                    allowRemove={false}
+                                                    server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`}
+                                                    name="file"
+                                                    credits={false}
+                                                    onprocessfiles={async () => {
+                                                        await api.post('/teacher/uploadFileInFolder', {
+                                                            Subject_id: props.subject.Subject_id,
+                                                            Room_id: props.subject.Room_id,
+                                                            Teacher_id: props.user.Teacher_id,
+                                                            folder: newFolderName
+                                                        })
+                                                        .catch(err => console.log(err))
+                                                        await api.post('/subject/inFolder', {
+                                                            Room_id: props.subject.Room_id,
+                                                            Subject_id: props.subject.Subject_id,
+                                                            Teacher_id: props.user.Teacher_id,
+                                                            folders: newFolderName
+                                                        })
+                                                            .then(res => {
+                                                                if (res.data !== 'This path does not exits.') {
+                                                                    setFilesInFolder(res.data)
+                                                                }
+                                                            })
+                                                            .then(setUploadFiles([]))
+                                                            .catch(err => console.log(err))
+                                                    }}
+                                                    onprocessfilerevert={(f) => {
+                                                        api.delete('/teacher/deleteFile', {
+                                                            data: {
+                                                                File_Path: newFolderName,
+                                                                Teacher_id: props.user.Teacher_id,
+                                                                Subject_id: props.subject.Subject_id,
+                                                                Room_id: props.subject.Room_id
+                                                            }
+                                                        })
+                                                            .then(console.log('deleted'))
+                                                            .catch(err => console.log(err))
+                                                    }}
+                                                    labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
+                                                />
+                                                {filesInFolder.length > 0 && filesInFolder.map((value,index) => {
+                                                    return(
+                                                        <div key={`fileUploadNo${index}`}>
+                                                            {value.File_Doc_id}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        }
                                         </Grid>
                                     </Grid>
-                                );
-                            })}    
-                        </List>
-                        }
-                </div>
-                :
-                'เลือกวิชาที่จะแสดง'}
-            </Grid>
-
-            <div>
-                <Modal centered show={showModal}>
-                    <Modal.Body style={{ display: 'flex', justifyContent:'center'}}>
-                        คุณต้องการที่จะลบเนื้อหานี้หรือไม่ ?
-                    </Modal.Body>
-                    <Modal.Footer style={{display:'flex', justifyContent:'space-around'}}>
-                        <Button variant="outlined" onClick={() => setShowModal(false)}>ยกเลิก</Button>
-                        <Button variant="outlined" color="secondary" onClick={() => {
-                            if(dataDelete){
-                                deleteHandle(dataDelete)
-                            }
-                            if(deleteFolder){
-                                deleteFolderHandle(deleteFolder)
-                            }
-                        }}>ลบ</Button>
-                    </Modal.Footer>
-                </Modal>
-            </div>          
-
-            <div>
-                <Modal centered show={enterFolder} backdrop="static" onHide={() => {
-                    setEnterFolder(false);
-                    setFolder('');
-                }}>
-                    <Modal.Header closeButton>{folder}</Modal.Header>
-                    <Modal.Body style={{ display: 'flex' }}>
-                        <Grid container direction='column'>
-                            <FilePond.FilePond
-                                files={uploadFiles}
-                                onupdatefiles={setUploadFiles}
-                                allowMultiple={true}
-                                maxFiles={3}
-                                acceptedFileTypes={['application/pdf']}
-                                allowDrop
-                                allowRemove={false}
-                                server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${folder}`}
-                                name="file"
-                                credits={false}
-                                onprocessfiles={() => {
-                                    api.post('/teacher/uploadFileInFolder',{
-                                        Subject_id : props.subject.Subject_id,
-                                        Room_id : props.subject.Room_id,
-                                        Teacher_id : props.user.Teacher_id,
-                                        folder : folder
+                                    :
+                                    <div>
+                                        <FilePond.FilePond
+                                            files={uploadFiles}
+                                            onupdatefiles={setUploadFiles}
+                                            allowMultiple={true}
+                                            maxFiles={3}
+                                            acceptedFileTypes={['application/pdf']}
+                                            allowDrop
+                                            allowRemove={false}
+                                            server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`}
+                                            name="file"
+                                            credits={false}
+                                            onprocessfiles={async () => {
+                                                await api.post('/teacher/uploadFileInFolder',{
+                                                    Subject_id : props.subject.Subject_id,
+                                                    Room_id : props.subject.Room_id,
+                                                    Teacher_id : props.user.Teacher_id,
+                                                    folder: 'noFolder'
+                                                })
+                                                .catch(err => console.log(err))
+                                                await setUploadFileWithoutFolder(true);
+                                            }}
+                                            labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
+                                        />
+                                    </div>
+                                    }
+                                </Grid>
+                            </Modal.Body>
+                            <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
+                            <Button variant="outlined" color="secondary" onClick={() => {
+                                if(newFolderName.length === 0){
+                                    setCreateContent(false);
+                                    setFolderName('');
+                                    setNewFolderName('');
+                                    setFolderCrete(false);
+                                }
+                                else{
+                                    api.delete('/teacher/deleteFolder', {
+                                        data: {
+                                            File_Path: newFolderName,
+                                            Teacher_id: props.user.Teacher_id,
+                                            Subject_id: props.subject.Subject_id,
+                                            Room_id: props.subject.Room_id
+                                        }
                                     })
-                                    .catch(err => console.log(err))
-                                    // getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id);
-                                    // setUploadFiles([]);
-                                }}
-                                labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
-                            />
-                            {filesInFolder.length === 0 ? 
-                            'ไม่มีเอกสารในโฟลเดอร์นี้'
+                                        .then(setCreateContent(false))
+                                        .then(setFolderName(''))
+                                        .then(setNewFolderName(''))
+                                        .then(setFolderCrete(false))
+                                        .catch(err => console.log(err))
+                                }
+                            }}>ยกเลิก</Button>
+                            {newFolderName.length !== 0 || uploadFileWithoutFolder ? 
+                            <Button variant="outlined" color="primary" onClick={() => {
+                                getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id,uploadFileWithoutFolder)
+                                setCreateContent(false);
+                                setUploadFiles([]);
+                                setFolderName('');
+                                setNewFolderName('');
+                                setFolderCrete(false);
+                            }}>สร้าง</Button>
                             :
-                            <div>
-                                
-                            </div>
+                            <Button variant="outlined" disabled>สร้าง</Button>
                             }
-                        </Grid>
-                    </Modal.Body>
-                </Modal>
-            </div>  
-        </div>
-    );
+                        </Modal.Footer>
+                        </Modal>
+                    </div>
+
+                    {/* Modal Upload Files */}
+                    <div>
+                        <Modal centered show={enterFolder} backdrop="static" onHide={() => {
+                            setEnterFolder(false);
+                            setSelectFolder('');
+                        }}>
+                            <Modal.Header closeButton>{selectFolder}</Modal.Header>
+                            <Modal.Body>
+                                <Grid container direction='column'>
+                                    <div>
+                                        <FilePond.FilePond
+                                            files={uploadFiles}
+                                            onupdatefiles={setUploadFiles}
+                                            allowMultiple={true}
+                                            maxFiles={3}
+                                            acceptedFileTypes={['application/pdf']}
+                                            allowDrop
+                                            allowRemove={false}
+                                            server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`}
+                                            name="file"
+                                            credits={false}
+                                            onprocessfiles={() => {
+                                                setFinistUploadFile(true);
+                                            }}
+                                            labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
+                                        />
+                                        {finishUploadFile ? 
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <Button color='primary' onClick={async() => {
+                                                await api.post('/teacher/uploadFileInFolder', {
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Room_id: props.subject.Room_id,
+                                                    Teacher_id: props.user.Teacher_id,
+                                                    folder: selectFolder
+                                                })
+                                                .then(setUploadFiles([]))
+                                                .catch(err => console.log(err))
+                                                await enterF(selectFolder);
+                                            }}>ตกลง</Button>
+                                        </div>
+                                        :
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Button disabled>ตกลง</Button></div>
+                                        }
+                                    </div>
+                                    <List>
+                                        {filesInFolder.length !== 0 && <div>{filesInFolder.map((value, index) => {
+                                            return (
+                                                <Grid item xs={12} key={`fileNo${index}`}>
+                                                    <Grid container>
+                                                        <Grid item xs={10}>
+                                                            <ListItem button onClick={() => getFile(value.File_Path.split('\\').pop().split('/').pop())}>
+                                                                <InsertDriveFileIcon />
+                                                                <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
+                                                            </ListItem>
+                                                        </Grid>
+                                                        <Grid item xs={2}><Button style={{ height: '100%' }} color='secondary'><DeleteForeverIcon /></Button></Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            );
+                                        })}</div>}
+                                    </List>
+                                </Grid>
+                            </Modal.Body>
+                            <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
+                                <Button variant="outlined" color="secondary" onClick={() => {
+                                    if (uploadFiles.length !== 0) {
+                                        // setEnterFolder(false);
+                                        console.log(filesInFolder)
+                                    }
+                                    else{
+                                        console.log(filesInFolder)
+                                    }
+                                }}>ยกเลิก</Button>
+                                {/* {newFolderName.length !== 0 ?
+                                    <Button variant="outlined" color="primary" onClick={() => {
+                                        console.log(newFolderName);
+                                        getAllFileTeacher(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id)
+                                        setCreateContent(false);
+                                        setFolderName('');
+                                        setNewFolderName('');
+                                        setFolderCrete(false);
+                                    }}>สร้าง</Button>
+                                    :
+                                    <Button variant="outlined" disabled>สร้าง</Button>
+                                } */}
+                            </Modal.Footer>
+                        </Modal>
+                    </div>
+                </Grid>
+            )
+        }
+        else if(role === 'student'){
+            return(
+                <div style={{ width: '90%', justifyContent: 'center', display: 'flex' }} className='pdf-container'>
+                    student
+                </div>
+            )
+        }
+    }
+    else{
+        return (<div style={{ width: '90%',justifyContent:'center', display:'flex' }} className='pdf-container'>เลือกวิชาที่จะแสดง</div>)
+    }
 }

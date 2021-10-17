@@ -158,7 +158,7 @@ export default function Works(props) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
                 {selectSubject ? 
-                    <Button onClick={() => setModalCreateWork(true)} color="primary">สร้างงาน</Button>
+                    <Button onClick={() => setModalCreateWork(true)} style={{ color:'#4377ED'}}>สร้างงาน</Button>
                     :
                     <Typography style={{width:'100%',display:'flex',justifyContent:'center'}}>เลือกวิชาที่จะแสดง</Typography>
                 }
