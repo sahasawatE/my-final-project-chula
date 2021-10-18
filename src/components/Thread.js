@@ -52,6 +52,8 @@ export default function Teacher(){
             }).then(result => {
                 setRes(result.data);
                 setPostModal(false);
+                setTitle('');
+                setQ('');
             }).catch(err => console.log(err))
         }
         else if(user.Teacher_id){
