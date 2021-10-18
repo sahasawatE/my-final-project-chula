@@ -14,8 +14,7 @@ import 'filepond/dist/filepond.min.css'
 
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
-// import Viewer, { Worker } from '@phuocng/react-pdf-viewer';
-// import '@phuocng/react-pdf-viewer/cjs/react-pdf-viewer.css';
+import StudentDocument from './StudentDocument';
 
 var b64toBlob = require('b64-to-blob');
 
@@ -29,11 +28,8 @@ export default function Documents(props){
 
     const subject = props.subject;
 
-    const [files,setFiles] = react.useState([]);
     const [folders, setFolders] = react.useState([]);
     const [role,setRole] = react.useState('teacher');
-
-    // still bug
 
     function getAllFileTeacher(roomId,teacherId,subjectId,noFolder){
         if(noFolder){
@@ -45,15 +41,6 @@ export default function Documents(props){
             Subject_id : subjectId
         }).then(result => {
             setFolders(result.data)
-        }).catch(err => console.log(err))
-    }
-
-    function getAllFileStudent(roomId,subjectId){
-        api.post('/student/allFiles',{
-            Room_id : roomId,
-            Subject_id : subjectId
-        }).then(result => {
-            setFiles(result.data)
         }).catch(err => console.log(err))
     }
 
@@ -142,12 +129,8 @@ export default function Documents(props){
                 setDir(`/Users/yen/Desktop/FinalProject/component/final/src/components/uploads/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}`);
             }
         }
-        else{
-            setRole('student');
-
-            if (props.subject) {
-                getAllFileStudent(props.subject.Room_id, props.subject.Subject_id);
-            }
+        else if (props.user.Student_id){
+            setRole('student')
         }
     }, [props.user,props.subject]);
 
@@ -223,6 +206,9 @@ export default function Documents(props){
                                                 </Grid>
                                             </Grid>
                                         );
+                                    }
+                                    else{
+                                        return null
                                     }
                                 })}
                             </List>
@@ -488,8 +474,8 @@ export default function Documents(props){
         }
         else if(role === 'student'){
             return(
-                <div style={{ width: '90%', justifyContent: 'center', display: 'flex' }} className='pdf-container'>
-                    student
+                <div className='pdf-container'>
+                    <StudentDocument subject={props.subject} user={props.user}/>
                 </div>
             )
         }
