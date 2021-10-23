@@ -40,10 +40,7 @@ export default function StudentDocument(props){
                         else {
                             f.push(v)
                         }
-<<<<<<< HEAD
                         return null
-=======
->>>>>>> 90ca6399f39df84d81530df0f88ac7b994f4394e
                     })
                     setFolders(f)
                 }
