@@ -68,14 +68,14 @@ export default function Notification(props) {
                 maxHeight: 300,
                 '& ul': { padding: 0 },
             }} subheader={<li />}>
-                {filterDate.reverse().map((value,index) => {
+                {filterDate.map((value,index) => {
                     return(
                         <li className={classes.listSection} key={`section-${index}`}>
                             <ul>
                                 {value === today ?
                                     <div key={index}>
                                         <ListSubheader style={{ height: '2.5rem', backgroundColor: 'white' }}>วันนี้</ListSubheader>
-                                        {noti.map((v, i) => {
+                                        {noti.reverse().map((v, i) => {
                                             if (v.Noti_Time.split(" ")[0] === value) {
                                                 return (
                                                     <NotiBlock key={`item-${index}-${i}`} time={[String(v.Noti_Time.split(" ")[1].split(".")[0].split(":")[0]), String(v.Noti_Time.split(" ")[1].split(".")[0].split(":")[1])]} subject={v.Subject_id} title={v.Noti_Detail} room={v.Room_id}/>
@@ -87,7 +87,7 @@ export default function Notification(props) {
                                     :
                                     <div key={index}>
                                         <ListSubheader style={{height:'2.5rem',backgroundColor:'white'}}>{`${value.split('-')[2]} / ${value.split('-')[1]} / ${value.split('-')[0]}`}</ListSubheader>
-                                        {noti.map((v, i) => {
+                                        {noti.reverse().map((v, i) => {
                                             if (v.Noti_Time.split(" ")[0] === value) {
                                                 return (
                                                     <div key={`item-${index}-${i}`}>
