@@ -209,7 +209,6 @@ export default function Documents(props){
                                                 </Grid>
                                             </Grid>
                                         );
-<<<<<<< HEAD
                                     })}
                                     {folders.map((value, index) => {
                                         if (value.split('/').at(-1) !== 'noFolder') {
@@ -237,14 +236,6 @@ export default function Documents(props){
                                         }
                                     })}
                                 </List>
-=======
-                                    }
-                                    else{
-                                        return null
-                                    }
-                                })}
-                            </List>
->>>>>>> 90ca6399f39df84d81530df0f88ac7b994f4394e
                         }
                     </Grid>
 
