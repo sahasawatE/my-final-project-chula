@@ -373,7 +373,7 @@ export default function Documents(props){
                                 </Grid>
                             </Modal.Body>
                             <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
-                            <Button variant="outlined" color="secondary" onClick={() => {
+                            <Button variant="outlined" color="secondary" onClick={ async() => {
                                 if(newFolderName.length === 0){
                                     if (uploadFiles.length === 0) {
                                         setCreateContent(false);
@@ -382,30 +382,39 @@ export default function Documents(props){
                                         setFolderCrete(false);
                                     }
                                     else {
-                                        console.log('hok3')
+                                        await Promise.all(
+                                            uploadFiles.map(async v => {
+                                                await api.delete('/subject/CancelFiles', {
+                                                    data: {
+                                                        path: `${dir}/noFolder`,
+                                                        name: v.file.name
+                                                    }
+                                                })
+                                                .catch(err => console.log(err))
+                                            })
+                                        );
+                                        await api.post('/subject/updateFileList', {
+                                            path: `${dir}/noFolder`
+                                        }).catch(err2 => console.log(err2))
+                                        setUploadFiles([]);
+                                        setCreateContent(false);
+                                        setFolderName('');
+                                        setNewFolderName('');
+                                        setFolderCrete(false);
                                     }
                                 }
                                 else{
-                                    console.log(`${dir}/${newFolderName}`)
-                                    if(uploadFiles.length === 0){
-                                        console.log('hok1')
-                                    }
-                                    else{
-                                        console.log('hok2')
-                                    }
-                                    // api.delete('/teacher/deleteFolder', {
-                                    //     data: {
-                                    //         File_Path: newFolderName,
-                                    //         Teacher_id: props.user.Teacher_id,
-                                    //         Subject_id: props.subject.Subject_id,
-                                    //         Room_id: props.subject.Room_id
-                                    //     }
-                                    // })
-                                    //     .then(setCreateContent(false))
-                                    //     .then(setFolderName(''))
-                                    //     .then(setNewFolderName(''))
-                                    //     .then(setFolderCrete(false))
-                                    //     .catch(err => console.log(err))
+                                    await api.delete('/subject/CancelFolder', {
+                                        data: {
+                                            path: `${dir}/${newFolderName}`
+                                        }
+                                    }).catch(err => console.log(err));
+                                    setUploadFiles([]);
+                                    setCreateContent(false);
+                                    setFolderName('');
+                                    setNewFolderName('');
+                                    setFolderCrete(false);
+                                    setFilesInFolder([]);
                                 }
                             }}>ยกเลิก</Button>
                             {newFolderName.length !== 0 || uploadFileWithoutFolder ? 

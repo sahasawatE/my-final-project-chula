@@ -20,6 +20,9 @@ export default function Works(props) {
     const user = props.user
     const {selectSubject} = react.useContext(selectSubjectContext);
 
+    const [studentUpload, setStudentUpload] = react.useState(false);
+    const [studentPrepareWorkFile, setStudentPrepareWorkFile] = react.useState([]);
+
     const [works,setWorks] = react.useState([]);
     const [modalCreateWork,setModalCreateWork] = react.useState(false)
     const [workName, setWorkName] = react.useState('');
@@ -379,7 +382,7 @@ export default function Works(props) {
                                 <Button variant="outlined" color="secondary" onClick={() => {
                                     setTeacherWorkModal(false)
                                 }}>ปิด</Button>
-                                <Button variant="outlined" color="primary" disabled>สร้าง</Button>
+                                <Button variant="outlined" color="primary" onClick={() => console.log('ส่งงาน')}>ดูการส่งงาน</Button>
                             </Modal.Footer>
                         </Modal>
                         :
@@ -421,6 +424,17 @@ export default function Works(props) {
             }).catch(err => console.log(err))
         }
 
+        function studentPrepareWork() {
+            api.post('/student/prepareWork', {
+                Subject_id: props.subject.Subject_id,
+                Student_id: props.user.Student_id,
+                Room_id: props.subject.Room_id,
+                Teacher_id: props.subject.Teacher_id,
+                workName: selectWork.Work_Name,
+                score: selectWork.Score
+            }).catch(err => console.log(err))
+        }
+
         react.useEffect(() => {
             if(selectSubject){
                 studentAllWorks(user.Room_id,selectSubject.name)
@@ -433,7 +447,8 @@ export default function Works(props) {
                     File_Path : selectWork.File_Path
                 }).then(res => {
                     setStudentWorkFiles(res.data)
-                }).catch(err => console.log(err))
+                })
+                .then(studentPrepareWork()).catch(err => console.log(err))
             }
         },[selectWork])
 
@@ -457,7 +472,7 @@ export default function Works(props) {
                                         <Grid item xs={12}>
                                             <ListItem button onClick={async() => {
                                                 await setSelectWork(value);
-                                                await setStudentOpenWork(true)
+                                                await setStudentOpenWork(true);
                                             }}>
                                                 <ListItemText key={index} primary={value.Work_Name} />
                                             </ListItem>
@@ -534,22 +549,43 @@ export default function Works(props) {
                                         allowRemove={false}
                                         name="file"
                                         credits={false}
-                                        onprocessfilerevert={(f) => {
-                                            api.delete('/teacher/deleteOnePrepare',{
-                                                data : {
-                                                    path : f.file.name,
-                                                    Room_id: props.subject.Room_id,
-                                                    Teacher_id: props.user.Teacher_id,
-                                                    Subject_id: props.subject.Subject_id,
-                                                    Work_Name: workName
-                                                }
-                                            }).then(console.log('deleted')).catch(err => console.log(err))
-                                        }}
+                                        // onprocessfilerevert={(f) => {
+                                        //     //edit this function
+                                        //     api.delete('/teacher/deleteOnePrepare',{
+                                        //         data : {
+                                        //             path : f.file.name,
+                                        //             Room_id: props.subject.Room_id,
+                                        //             Student_id: props.user.Student_id,
+                                        //             Subject_id: props.subject.Subject_id,
+                                        //             Work_Name: selectWork.Work_Name
+                                        //         }
+                                        //     }).then(console.log('deleted')).catch(err => console.log(err))
+                                        // }}
                                         server={{
-                                            process : `http://localhost:3001/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`
+                                            process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`
                                         }}
+                                        onprocessfiles={() => setStudentUpload(true)}
                                         labelIdle='ลากและวางงานของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                     />
+                                </div>
+                                <div style={{ paddingBottom: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                    {studentUpload && <Button onClick={() => {
+                                        api.post('/student/updateWorkSubmit',{
+                                            Subject_id: props.subject.Subject_id,
+                                            Student_id: props.user.Student_id,
+                                            Room_id: props.subject.Room_id,
+                                            Teacher_id: props.subject.Teacher_id,
+                                            workName: selectWork.Work_Name,
+                                            score: selectWork.Score
+                                        })
+                                        .then(setWorkFile([]))
+                                        .then(setStudentUpload(false))
+                                        .then(studentPrepareWork())
+                                        .catch(err => console.log(err))
+                                    }}>อัพโหลด</Button>}
+                                </div>
+                                <div>
+                                    {studentPrepareWorkFile}
                                 </div>
                             </Grid>
                         </Modal.Body>
