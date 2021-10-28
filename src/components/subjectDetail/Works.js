@@ -1,10 +1,13 @@
-import { Grid, Button, Typography, List, ListItem, ListItemText } from '@material-ui/core';
+import { Grid, Button, Typography, List, ListItem, ListItemText, IconButton } from '@material-ui/core';
 import { Form, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import react from 'react';
 import { selectSubjectContext } from '../selectSubjectContext';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ClearIcon from '@mui/icons-material/Clear';
+import ImageIcon from '@mui/icons-material/Image';
 import * as FilePond from 'react-filepond';
 import 'filepond/dist/filepond.min.css'
 
@@ -363,7 +366,8 @@ export default function Works(props) {
                                             return (
                                                 <div key={`workFile${value.Work_File_id}Index${index}`}>
                                                     <Button style={{ width: '100%', display: 'flex', justifyContent: 'flex-start' }} onClick={() => teacherClickWorkFile(value.File_path, value.File_type)}>
-                                                        {value.File_path.split('\\').pop().split('/').pop()}
+                                                        <div style={{ color: 'gray' }}>{value.File_type === 'pdf' ? <InsertDriveFileIcon /> : <ImageIcon />}</div>
+                                                        <Typography style={{ paddingLeft: '0.5rem' }}>{value.File_path.split('\\').pop().split('/').pop()}</Typography>
                                                     </Button>
                                                 </div>
                                             )
@@ -432,7 +436,9 @@ export default function Works(props) {
                 Teacher_id: props.subject.Teacher_id,
                 workName: selectWork.Work_Name,
                 score: selectWork.Score
-            }).catch(err => console.log(err))
+            })
+            .then(res => setStudentPrepareWorkFile(res.data))
+            .catch(err => console.log(err))
         }
 
         react.useEffect(() => {
@@ -491,6 +497,7 @@ export default function Works(props) {
                         setStudentOpenWork(false);
                         setReadMore(false);
                         setStudentWorkFiles([]);
+                        setStudentPrepareWorkFile([]);
                     }}>
                             <Modal.Header closeButton>
                                 <div style={{display:'flex',flexDirection:'row'}}>
@@ -527,7 +534,8 @@ export default function Works(props) {
                                         return(
                                             <div key={`workFile${value.Work_File_id}Index${index}`}>
                                                 <Button style={{ width: '100%', display:'flex',justifyContent:'flex-start' }} onClick={() => studentClickWorkFile(value.File_path,value.File_type)}>
-                                                    {value.File_path.split('\\').pop().split('/').pop()}
+                                                    <div style={{ color: 'gray' }}>{value.File_type === 'pdf' ? <InsertDriveFileIcon /> : <ImageIcon />}</div>
+                                                    <Typography style={{ paddingLeft: '0.5rem' }}>{value.File_path.split('\\').pop().split('/').pop()}</Typography>
                                                 </Button>
                                             </div>
                                         )
@@ -569,8 +577,8 @@ export default function Works(props) {
                                     />
                                 </div>
                                 <div style={{ paddingBottom: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                                    {studentUpload && <Button onClick={() => {
-                                        api.post('/student/updateWorkSubmit',{
+                                    {studentUpload && <Button color="primary" onClick={async () => {
+                                        await api.post('/student/updateWorkSubmit',{
                                             Subject_id: props.subject.Subject_id,
                                             Student_id: props.user.Student_id,
                                             Room_id: props.subject.Room_id,
@@ -580,12 +588,41 @@ export default function Works(props) {
                                         })
                                         .then(setWorkFile([]))
                                         .then(setStudentUpload(false))
-                                        .then(studentPrepareWork())
                                         .catch(err => console.log(err))
+                                        studentPrepareWork()
                                     }}>อัพโหลด</Button>}
                                 </div>
-                                <div>
-                                    {studentPrepareWorkFile}
+                                <div style={{ maxHeight: '20vh', overflow:'scroll'}}>
+                                    {studentPrepareWorkFile.map((value,index) => {
+                                        return(
+                                            <Grid container justifyContent='space-between' key={`studentFileNo${index}`}>
+                                                <Grid item xs={10} style={{ display: 'flex' }} zeroMinWidth>
+                                                    <Button style={{ width: '100%', justifyContent: 'flex-start'}} onClick={() => studentClickWorkFile(value.File_Path, value.File_type)}>
+                                                        <div style={{ color: 'gray' }}>{value.File_type === 'pdf' ? <InsertDriveFileIcon /> : <ImageIcon />}</div>
+                                                        <Typography noWrap style={{ paddingLeft: '0.5rem' }}>{value.File_Path.split('\\').pop().split('/').pop()}</Typography>
+                                                    </Button>
+                                                </Grid>
+                                                <Grid item xs={2} style={{ display: 'flex', justifyContent:'center' }}>
+                                                    <IconButton color='secondary' onClick={async() => {
+                                                        await api.delete('/student/deletePrepareWorkFile',{
+                                                            data:{
+                                                                file : value
+                                                            }
+                                                        }).catch(err => console.log(err))
+                                                        await api.post('/student/updateWorkSubmit', {
+                                                            Subject_id: props.subject.Subject_id,
+                                                            Student_id: props.user.Student_id,
+                                                            Room_id: props.subject.Room_id,
+                                                            Teacher_id: props.subject.Teacher_id,
+                                                            workName: selectWork.Work_Name,
+                                                            score: selectWork.Score
+                                                        }).catch(err => console.log(err))
+                                                        studentPrepareWork()
+                                                    }}><ClearIcon/></IconButton>
+                                                </Grid>
+                                            </Grid>
+                                        );
+                                    })}
                                 </div>
                             </Grid>
                         </Modal.Body>
@@ -594,8 +631,13 @@ export default function Works(props) {
                                 setStudentOpenWork(false);
                                 setReadMore(false);
                                 setStudentWorkFiles([]);
+                                setStudentPrepareWorkFile([]);
                             }}>ปิด</Button>
-                            <Button variant="outlined" color="primary" disabled>สร้าง</Button>
+                            {studentPrepareWorkFile.length === 0 ?
+                            <Button variant="outlined" disabled>สร้าง</Button>
+                            :
+                            <Button variant="outlined" color="primary">ส่ง</Button>
+                            }
                         </Modal.Footer>
                     </Modal>
                     :
