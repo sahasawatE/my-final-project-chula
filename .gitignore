@@ -13,6 +13,7 @@
 /components/uploads
 /components/uploadWorks
 /components/studentSubmitWork
+/components/TeacherUploadClip
 
 # misc
 .DS_Store
