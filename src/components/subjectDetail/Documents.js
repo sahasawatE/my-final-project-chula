@@ -285,7 +285,7 @@ export default function Documents(props){
                                                     maxFiles={3}
                                                     acceptedFileTypes={['application/pdf']}
                                                     allowDrop
-                                                    allowRemove={false}
+                                                    // allowRemove={false}
                                                     server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`}
                                                     name="file"
                                                     credits={false}
@@ -565,6 +565,11 @@ export default function Documents(props){
         }
     }
     else{
-        return (<div style={{ width: '90%',justifyContent:'center', display:'flex' }} className='pdf-container'>เลือกวิชาที่จะแสดง</div>)
+        return (
+            <div>
+                <div style={{ width: '100%', justifyContent: 'center', display: 'flex' }} className='pdf-container'>เลือกวิชาที่จะแสดง</div>
+                <br/>
+            </div>
+        )
     }
 }

@@ -46,36 +46,41 @@ export default function Clip(props) {
     const [selectVideo, setSelectVideo] = react.useState('');
     const [selectClipFolder, setSelectClipFolder] = react.useState('');
     const [clipFolderModal, setClipFolderModal] = react.useState(false);
+    const [cancelBtn, setCancelBtn] = react.useState(true);
+
+    function allVideosAndFolders(){
+        api.post('/subject/inClipFolder', {
+            Room_id: props.subject.Room_id,
+            Subject_id: props.subject.Subject_id,
+            Teacher_id: props.user.Teacher_id,
+            folders: 'noFolder'
+        }).then(res => {
+            if (res.data !== 'This path does not exits.') {
+                setClipInNoFolder(res.data)
+            }
+        }).catch(err => console.log(err))
+        api.post('/teacher/allClipFolders', {
+            Room_id: props.subject.Room_id,
+            Subject_id: props.subject.Subject_id,
+            Teacher_id: props.user.Teacher_id
+        }).then(res2 => {
+            var f = [];
+            if (res2.data.length !== 0) {
+                res2.data.map(v => {
+                    if (v.split('/').at(-1) !== 'noFolder') {
+                        f.push(v)
+                    }
+                    return null
+                })
+                setClipFolders(f)
+            }
+        }).catch(err => console.log(err))
+    }
 
     react.useEffect(() => {
         if(props.user.Teacher_id){
             if (props.subject) {
-                api.post('/subject/inClipFolder',{
-                    Room_id: props.subject.Room_id,
-                    Subject_id: props.subject.Subject_id,
-                    Teacher_id: props.user.Teacher_id,
-                    folders : 'noFolder'
-                }).then(res => {
-                    if (res.data !== 'This path does not exits.') {
-                        setClipInNoFolder(res.data)
-                    }
-                }).catch(err => console.log(err))
-                api.post('/teacher/allClipFolders',{
-                    Room_id: props.subject.Room_id,
-                    Subject_id: props.subject.Subject_id,
-                    Teacher_id: props.user.Teacher_id
-                }).then(res2 => {
-                    var f = [];
-                    if(res2.data.length !== 0){
-                        res2.data.map(v => {
-                            if(v.split('/').at(-1) !== 'noFolder'){
-                                f.push(v)
-                            }
-                            return null
-                        })
-                        setClipFolders(f)
-                    }
-                }).catch(err => console.log(err))
+                allVideosAndFolders();
             }
         }
         else{
@@ -234,6 +239,7 @@ export default function Clip(props) {
                                                     allowRevert={false}
                                                     name="clip"
                                                     credits={false}
+                                                    onprocessfilestart={() => setCancelBtn(false)}
                                                     acceptedFileTypes={['video/*']}
                                                     server={`http://localhost:3001/teacher/uploadClip/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}/${clipName}`}
                                                     onprocessfiles={async () => {
@@ -255,23 +261,13 @@ export default function Clip(props) {
                                                                         setClipsInFolder(res.data)
                                                                     }
                                                                 })
-                                                                .then(() => {
-                                                                    setClips([]);
-                                                                    setClipName('')
-                                                                })
+                                                                .then(setCancelBtn(true))
                                                                 .catch(err => console.log(err))
                                                         }
                                                     }
                                                     labelIdle='ลากและวางคลิปสอนของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span>'
                                                 />
                                             </Form.Group>
-                                            {clipsInFolder.length > 0 && clipsInFolder.map((value, index) => {
-                                                return (
-                                                    <div key={`clipUploadNo${index}`}>
-                                                        {value.Clip_Name}
-                                                    </div>
-                                                );
-                                            })}
                                         </div>
                                     }
                                 </Grid>
@@ -294,6 +290,7 @@ export default function Clip(props) {
                                     allowRevert={false}
                                     name="clip"
                                     credits={false}
+                                    onprocessfilestart={() => setCancelBtn(false)}
                                     acceptedFileTypes={['video/*']}
                                     server={`http://localhost:3001/teacher/uploadClip/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder/${clipName}`}
                                     onprocessfiles={async () => {
@@ -316,10 +313,7 @@ export default function Clip(props) {
                                                     setClipsInFolder(res.data)
                                                 }
                                             })
-                                            .then(() => {
-                                                setClips([]);
-                                                setClipName('');
-                                            })
+                                            .then(setCancelBtn(true))
                                             .catch(err => console.log(err))
                                     }}
                                     labelIdle='ลากและวางคลิปสอนของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span>'
@@ -330,31 +324,76 @@ export default function Clip(props) {
                 </Modal.Body>
                 <Modal.Footer>
                     <Grid container justifyContent='space-around'>
-                        {clips.length === 0 ?
-                            <Button variant='outlined' color='error' onClick={() => {
+                        {cancelBtn ?
+                            <Button variant='outlined' color='error' onClick={async () => {
                                 if(newFolderName.length === 0){
                                     if (clipsInFolder.length === 0) {
                                         setUploadClip(false)
+                                        setClipName('');
                                     }
                                 }
                                 else{
                                     if(newFolderName === 'noFolder'){
-                                        console.log('delete files in folder called noFolder')
+                                        await Promise.all(
+                                            clips.map(async v => {
+                                                await api.delete('/subject/CancelClipFiles', {
+                                                    data: {
+                                                        path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
+                                                        name: v.file.name
+                                                    }
+                                                })
+                                                    .catch(err => console.log(err))
+                                            })
+                                        );
+                                        await api.post('/subject/updateClipList', {
+                                            path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`
+                                        })
+                                        .then(() => {
+                                            setNewFolderName('');
+                                            setUploadClip(false);
+                                            setFolderCreate(false);
+                                            setClipName('');
+                                            setClipsInFolder([]);
+                                            setClips([]);
+                                            allVideosAndFolders();
+                                        })
+                                        .catch(err2 => console.log(err2))
                                     }
                                     else {
-                                        if (clipsInFolder.length === 0) {
-                                            console.log('delete folder')
-                                        }
-                                        else {
-                                            console.log('delete files and folder')
-                                        }
+                                        api.delete('/subject/CancelClipFolder', {
+                                            data: {
+                                                path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`
+                                            }
+                                        })
+                                        .then(() => {
+                                            setNewFolderName('');
+                                            setUploadClip(false);
+                                            setFolderCreate(false);
+                                            setClipName('');
+                                            setClipsInFolder([]);
+                                            setClips([]);
+                                            allVideosAndFolders();
+                                        })
+                                        .catch(err => console.log(err));
                                     }
                                 }
                             }}>ยกเลิก</Button>
                         :
                             <Button variant='outlined' disabled>ยกเลิก</Button>
                         }
-                        <Button variant='outlined' color='primary'>ตกลง</Button>
+                        {clipsInFolder.length === 0 ? 
+                            <Button variant='outlined' disabled>ตกลง</Button>
+                            :
+                            <Button variant='outlined' color='primary' onClick={() => {
+                                setClips([]);
+                                setNewFolderName('');
+                                setClipsInFolder([]);
+                                setUploadClip(false);
+                                setFolderCreate(false);
+                                setClipName('');
+                                allVideosAndFolders();
+                            }}>ตกลง</Button>
+                        }
                     </Grid>
                 </Modal.Footer>
             </Modal>

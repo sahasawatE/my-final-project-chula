@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import react from 'react';
 import { selectSubjectContext } from '../selectSubjectContext';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import Chip from '@mui/material/Chip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
@@ -126,6 +127,8 @@ export default function Works(props) {
         const [teacherWorkModal, setTeacherWorkModal] = react.useState(false);
         const [readMore, setReadMore] = react.useState(false);
         const [teacherWorkFiles, setTeacherWorkFiles] = react.useState([]);
+        const [viewWorkSubmit, setViewWorkSubmit] = react.useState(false);
+        const [submittedStudent,setSubmittedStudent] = react.useState([]);
         function teacherClickWorkFile(pathFile, type) {
             api.post('/subject/file', {
                 path: pathFile,
@@ -219,28 +222,57 @@ export default function Works(props) {
                             <Grid container direction="column" justifyContent="space-between">
                                 <Grid item xs={12} style={{ maxHeight: '65vh', overflow: 'scroll' }} innerRef={workFile.length === 0 ? null : createWorkRef}>
                                     <Grid container direction="column">
-                                        <Form.Group>
-                                            <Form.Label>ชื่องาน</Form.Label>
-                                            <Form.Control style={{ width: '100%' }} type="text" onChange={(e) => setWorkName(e.target.value)} placeholder="เขียนชื่อหัวข้อของงาน" />
-                                        </Form.Group>
-                                        <Form.Group>
-                                            <Form.Label>รายละเอียด</Form.Label>
-                                            <Form.Control onChange={(e) => setWorkDetail(e.target.value)} placeholder="เขียนรายละเอียดของงาน" as="textarea" rows={3} style={{ maxHeight: '95px' }} />
-                                        </Form.Group>
-                                        <Grid container direction='row' justifyContent='space-between'>
-                                            <div style={{width:'70%'}}>
-                                                <Form.Group>
-                                                    <Form.Label>กำหนดส่ง</Form.Label>
-                                                    <Form.Control type='datetime-local' onChange={(e) => setWorkDeadline(e.target.value)} />
-                                                </Form.Group>
-                                            </div>
-                                            <div style={{ width: '25%' }} >
-                                                <Form.Group>
-                                                    <Form.Label>คะแนนเต็ม</Form.Label>
-                                                    <Form.Control type='number' value={workPoint} onChange={(e) => setWorkPoint(e.target.value)} />
-                                                </Form.Group>
-                                            </div>
-                                        </Grid>
+                                        {addFile ? 
+                                        <div>
+                                            <Form.Group>
+                                                <Form.Label>ชื่องาน</Form.Label>
+                                                <Form.Control style={{ width: '100%' }} type="text" disabled onChange={(e) => setWorkName(e.target.value)} placeholder="เขียนชื่อหัวข้อของงาน" />
+                                            </Form.Group>
+                                            <Form.Group>
+                                                <Form.Label>รายละเอียด</Form.Label>
+                                                <Form.Control onChange={(e) => setWorkDetail(e.target.value)} disabled placeholder="เขียนรายละเอียดของงาน" as="textarea" rows={3} style={{ maxHeight: '95px' }} />
+                                            </Form.Group>
+                                            <Grid container direction='row' justifyContent='space-between'>
+                                                <div style={{width:'70%'}}>
+                                                    <Form.Group>
+                                                        <Form.Label>กำหนดส่ง</Form.Label>
+                                                        <Form.Control type='datetime-local' disabled onChange={(e) => setWorkDeadline(e.target.value)} />
+                                                    </Form.Group>
+                                                </div>
+                                                <div style={{ width: '25%' }} >
+                                                    <Form.Group>
+                                                        <Form.Label>คะแนนเต็ม</Form.Label>
+                                                        <Form.Control type='number' value={workPoint} disabled onChange={(e) => setWorkPoint(e.target.value)} />
+                                                    </Form.Group>
+                                                </div>
+                                            </Grid>
+                                        </div>
+                                        :
+                                        <div>
+                                            <Form.Group>
+                                                <Form.Label>ชื่องาน</Form.Label>
+                                                <Form.Control style={{ width: '100%' }} type="text" onChange={(e) => setWorkName(e.target.value)} placeholder="เขียนชื่อหัวข้อของงาน" />
+                                            </Form.Group>
+                                            <Form.Group>
+                                                <Form.Label>รายละเอียด</Form.Label>
+                                                <Form.Control onChange={(e) => setWorkDetail(e.target.value)} placeholder="เขียนรายละเอียดของงาน" as="textarea" rows={3} style={{ maxHeight: '95px' }} />
+                                            </Form.Group>
+                                            <Grid container direction='row' justifyContent='space-between'>
+                                                <div style={{width:'70%'}}>
+                                                    <Form.Group>
+                                                        <Form.Label>กำหนดส่ง</Form.Label>
+                                                        <Form.Control type='datetime-local' onChange={(e) => setWorkDeadline(e.target.value)} />
+                                                    </Form.Group>
+                                                </div>
+                                                <div style={{ width: '25%' }} >
+                                                    <Form.Group>
+                                                        <Form.Label>คะแนนเต็ม</Form.Label>
+                                                        <Form.Control type='number' value={workPoint} onChange={(e) => setWorkPoint(e.target.value)} />
+                                                    </Form.Group>
+                                                </div>
+                                            </Grid>
+                                        </div>
+                                        }
                                         {workName !== '' && workDetail !== '' && workDeadline !== '' ?
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                                                 <Button onClick={() => setAddFile(true)} color="primary">เพิ่มไฟล์</Button>
@@ -262,17 +294,18 @@ export default function Works(props) {
                                                 allowRemove={false}
                                                 name="file"
                                                 credits={false}
-                                                onprocessfilerevert={(f) => {
-                                                    api.delete('/teacher/deleteOnePrepare',{
-                                                        data : {
-                                                            path : f.file.name,
-                                                            Room_id: props.subject.Room_id,
-                                                            Teacher_id: props.user.Teacher_id,
-                                                            Subject_id: props.subject.Subject_id,
-                                                            Work_Name: workName
-                                                        }
-                                                    }).then(console.log('deleted')).catch(err => console.log(err))
-                                                }}
+                                                allowRevert={false}
+                                                // onprocessfilerevert={(f) => {
+                                                //     api.delete('/teacher/deleteOnePrepare',{
+                                                //         data : {
+                                                //             path : f.file.name,
+                                                //             Room_id: props.subject.Room_id,
+                                                //             Teacher_id: props.user.Teacher_id,
+                                                //             Subject_id: props.subject.Subject_id,
+                                                //             Work_Name: workName
+                                                //         }
+                                                //     }).then(console.log('deleted')).catch(err => console.log(err))
+                                                // }}
                                                 server={{
                                                     process : `http://localhost:3001/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`
                                                 }}
@@ -295,16 +328,15 @@ export default function Works(props) {
                                     deletePrepare(workFile)
                                 }
                             }}>ยกเลิก</Button>
-                            {/* there is a bag that cannot update work_status bacause the work_detail is not match */}
                             {workName !== '' && workDetail !== '' && workDeadline !== '' ?
                                 workFile.length === 0 ?
                                     <Button variant="outlined" color="primary" onClick={() => 
                                         createWork(workName,workDetail,workDeadline,workPoint)
-                                    }>สร้าง1</Button>
+                                    }>สร้าง</Button>
                                     :
                                     <Button variant="outlined" color="primary" onClick={() => 
                                         updataCreateWork(workName, workDetail, workDeadline, workPoint)
-                                    }>สร้าง2</Button>
+                                    }>สร้าง</Button>
                                 :
                                 <Button variant="outlined" color="primary" disabled>สร้าง</Button>
                             }
@@ -384,13 +416,70 @@ export default function Works(props) {
                             </Modal.Body>
                             <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
                                 <Button variant="outlined" color="secondary" onClick={() => {
-                                    setTeacherWorkModal(false)
+                                    setTeacherWorkModal(false);
+                                    setViewWorkSubmit(false);
                                 }}>ปิด</Button>
-                                <Button variant="outlined" color="primary" onClick={() => console.log('ส่งงาน')}>ดูการส่งงาน</Button>
+                                <Button variant="outlined" color="primary" onClick={() => {
+                                    api.post('/teacher/checkWork',{
+                                        Room_id: props.subject.Room_id,
+                                        Teacher_id: props.user.Teacher_id,
+                                        Subject_id: props.subject.Subject_id,
+                                        Work_Name: selectWork.Work_Name
+                                    })
+                                    .then(res => {
+                                        setSubmittedStudent(res.data)
+                                    })
+                                    .then(() => {
+                                        setViewWorkSubmit(true);
+                                        setTeacherWorkModal(false);
+                                    })
+                                    .catch(err => console.log(err))
+                                }}>ดูการส่งงาน</Button>
                             </Modal.Footer>
                         </Modal>
                         :
                         null
+                    }
+                </div>
+
+                {/* Submittion Work Modal */}
+                <div>
+                    {selectWork &&
+                        <Modal centered show={viewWorkSubmit} backdrop="static" onHide={() => {
+                            setViewWorkSubmit(false);
+                            setTeacherWorkModal(true);
+                        }}>
+                            <Modal.Header closeButton>
+                                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Typography>การส่งงาน {selectWork.Work_Name}</Typography>
+                                    <Typography style={{ paddingLeft: '16px', color: '#9A9A9A' }}>({selectWork.Score} คะแนน)</Typography>
+                                </div>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {submittedStudent.length === 0 ?
+                                    <div>
+                                        <Typography>ว่างเปล่า</Typography>
+                                    </div>
+                                    :
+                                    <div>
+                                        {submittedStudent.map((value,index) => {
+                                            return(
+                                                <div style={{display:'flex',justifyContent:'space-between',flexDirection:'row'}} key={`listStudentThatSubmittedWorkNO${index}`}>
+                                                    <Typography>{value.Student_id}</Typography>
+                                                    {value.files.length !== 0 && <Typography>{value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์</Typography>}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                }
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="outlined" color="secondary" onClick={() => {
+                                    setTeacherWorkModal(true);
+                                    setViewWorkSubmit(false);
+                                }}>ปิด</Button>
+                            </Modal.Footer>
+                        </Modal>
                     }
                 </div>
             </div>
@@ -402,6 +491,7 @@ export default function Works(props) {
         const [selectWork, setSelectWork] = react.useState(null);
         const [readMore, setReadMore] = react.useState(false);
         const [studentWorkFiles, setStudentWorkFiles] = react.useState([]);
+        const [isSubmit, setIsSubmit] = react.useState(false);
 
         function studentAllWorks(roomId,subjectId){
             api.post('/subject/studentWorks',{
@@ -452,7 +542,11 @@ export default function Works(props) {
                 api.post('/subject/allWorkFiles',{
                     File_Path : selectWork.File_Path
                 }).then(res => {
-                    setStudentWorkFiles(res.data)
+                    setStudentWorkFiles(res.data);
+                    api.post('/subject/checkStatusWork',{
+                        selectWork : selectWork,
+                        Student_id : props.user.Student_id
+                    }).then(res2 => setIsSubmit(res2.data)).catch(err2 => console.log(err2))
                 })
                 .then(studentPrepareWork()).catch(err => console.log(err))
             }
@@ -496,12 +590,14 @@ export default function Works(props) {
                         <Modal centered backdrop="static" show={studentOpenWork} onHide={() => {
                         setStudentOpenWork(false);
                         setReadMore(false);
+                        setSelectWork(null);
                         setStudentWorkFiles([]);
                         setStudentPrepareWorkFile([]);
                     }}>
                             <Modal.Header closeButton>
                                 <div style={{display:'flex',flexDirection:'row'}}>
                                     <Typography>{selectWork.Work_Name}</Typography>
+                                    <div style={{ paddingLeft: '16px', marginTop: '-0.3rem' }}><Chip color={isSubmit ? 'success' : 'error'} variant='outlined' label={isSubmit ? 'ส่งแล้ว' : 'ยังไม่ส่ง'} /></div>
                                     <Typography style={{ paddingLeft: '16px', color: '#9A9A9A' }}>({selectWork.Score} คะแนน)</Typography>
                                 </div>
                             </Modal.Header>
@@ -545,37 +641,40 @@ export default function Works(props) {
                                         <Typography style={{ color: '#9A9A9A', paddingRight:'0.5rem' }}>ส่งก่อน {selectWork.End.split('T')[0].split('-')[2] + '/' + selectWork.End.split('T')[0].split('-')[1] + '/' + selectWork.End.split('T')[0].split('-')[0]}</Typography>
                                         <Typography style={{ color: '#9A9A9A' }}>เวลา {selectWork.End.split('T')[1]}</Typography>
                                 </div>
-                                <div>
-                                    {/* not complete yet */}
-                                    <FilePond.FilePond
-                                        files={workFile}
-                                        onupdatefiles={setWorkFile}
-                                        allowMultiple={true}
-                                        maxFiles={3}
-                                        allowDrop
-                                        acceptedFileTypes={['application/pdf','image/*']}
-                                        allowRemove={false}
-                                        name="file"
-                                        credits={false}
-                                        // onprocessfilerevert={(f) => {
-                                        //     //edit this function
-                                        //     api.delete('/teacher/deleteOnePrepare',{
-                                        //         data : {
-                                        //             path : f.file.name,
-                                        //             Room_id: props.subject.Room_id,
-                                        //             Student_id: props.user.Student_id,
-                                        //             Subject_id: props.subject.Subject_id,
-                                        //             Work_Name: selectWork.Work_Name
-                                        //         }
-                                        //     }).then(console.log('deleted')).catch(err => console.log(err))
-                                        // }}
-                                        server={{
-                                            process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`
-                                        }}
-                                        onprocessfiles={() => setStudentUpload(true)}
-                                        labelIdle='ลากและวางงานของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
-                                    />
-                                </div>
+                                {!isSubmit &&
+                                    <div>
+                                        {/* not complete yet */}
+                                        <FilePond.FilePond
+                                            files={workFile}
+                                            onupdatefiles={setWorkFile}
+                                            allowMultiple={true}
+                                            maxFiles={3}
+                                            allowDrop
+                                            acceptedFileTypes={['application/pdf','image/*']}
+                                            allowRemove={false}
+                                            name="file"
+                                            credits={false}
+                                            allowRevert={false}
+                                            // onprocessfilerevert={(f) => {
+                                            //     //edit this function
+                                            //     api.delete('/teacher/deleteOnePrepare',{
+                                            //         data : {
+                                            //             path : f.file.name,
+                                            //             Room_id: props.subject.Room_id,
+                                            //             Student_id: props.user.Student_id,
+                                            //             Subject_id: props.subject.Subject_id,
+                                            //             Work_Name: selectWork.Work_Name
+                                            //         }
+                                            //     }).then(console.log('deleted')).catch(err => console.log(err))
+                                            // }}
+                                            server={{
+                                                process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`
+                                            }}
+                                            onprocessfiles={() => setStudentUpload(true)}
+                                            labelIdle='ลากและวางงานของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
+                                        />
+                                    </div>
+                                }
                                 <div style={{ paddingBottom: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                                     {studentUpload && <Button color="primary" onClick={async () => {
                                         await api.post('/student/updateWorkSubmit',{
@@ -593,20 +692,22 @@ export default function Works(props) {
                                     }}>อัพโหลด</Button>}
                                 </div>
                                 <div style={{ maxHeight: '20vh', overflow:'scroll'}}>
+                                    {studentPrepareWorkFile.length !== 0 && <Typography>ไฟล์ของคุณ</Typography>}
                                     {studentPrepareWorkFile.map((value,index) => {
                                         return(
                                             <Grid container justifyContent='space-between' key={`studentFileNo${index}`}>
-                                                <Grid item xs={10} style={{ display: 'flex' }} zeroMinWidth>
+                                                <Grid item xs={isSubmit ? 12 : 10} style={{ display: 'flex' }} zeroMinWidth>
                                                     <Button style={{ width: '100%', justifyContent: 'flex-start'}} onClick={() => studentClickWorkFile(value.File_Path, value.File_type)}>
                                                         <div style={{ color: 'gray' }}>{value.File_type === 'pdf' ? <InsertDriveFileIcon /> : <ImageIcon />}</div>
                                                         <Typography noWrap style={{ paddingLeft: '0.5rem' }}>{value.File_Path.split('\\').pop().split('/').pop()}</Typography>
                                                     </Button>
                                                 </Grid>
-                                                <Grid item xs={2} style={{ display: 'flex', justifyContent:'center' }}>
-                                                    <IconButton color='secondary' onClick={async() => {
-                                                        await api.delete('/student/deletePrepareWorkFile',{
-                                                            data:{
-                                                                file : value
+                                                {!isSubmit && 
+                                                <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center' }}>
+                                                    <IconButton color='secondary' onClick={async () => {
+                                                        await api.delete('/student/deletePrepareWorkFile', {
+                                                            data: {
+                                                                file: value
                                                             }
                                                         }).catch(err => console.log(err))
                                                         await api.post('/student/updateWorkSubmit', {
@@ -618,8 +719,9 @@ export default function Works(props) {
                                                             score: selectWork.Score
                                                         }).catch(err => console.log(err))
                                                         studentPrepareWork()
-                                                    }}><ClearIcon/></IconButton>
+                                                    }}><ClearIcon /></IconButton>
                                                 </Grid>
+                                                }
                                             </Grid>
                                         );
                                     })}
@@ -630,13 +732,42 @@ export default function Works(props) {
                             <Button variant="outlined" color="secondary" onClick={() => {
                                 setStudentOpenWork(false);
                                 setReadMore(false);
+                                setSelectWork(null);
                                 setStudentWorkFiles([]);
                                 setStudentPrepareWorkFile([]);
                             }}>ปิด</Button>
                             {studentPrepareWorkFile.length === 0 ?
-                            <Button variant="outlined" disabled>สร้าง</Button>
+                            <Button variant="outlined" disabled>ส่ง</Button>
                             :
-                            <Button variant="outlined" color="primary">ส่ง</Button>
+                            isSubmit ? 
+                                <Button color='primary' variant='outlined' onClick={() => {
+                                    setIsSubmit(false);
+                                    api.post('/student/editWork',{
+                                        Subject_id: props.subject.Subject_id,
+                                        Student_id: props.user.Student_id,
+                                        Room_id: props.subject.Room_id,
+                                        Teacher_id: props.subject.Teacher_id,
+                                        workName: selectWork.Work_Name,
+                                        score: selectWork.Score
+                                    }).catch(err => console.log(err))
+                                }}>แก้ไข</Button>
+                                :
+                                <Button variant="outlined" color="primary" onClick={() => {
+                                    api.post('/student/submitwork',{
+                                        Subject_id: props.subject.Subject_id,
+                                        Student_id: props.user.Student_id,
+                                        Room_id: props.subject.Room_id,
+                                        Teacher_id: props.subject.Teacher_id,
+                                        workName: selectWork.Work_Name,
+                                        score: selectWork.Score
+                                    }).then(() => {
+                                        setStudentOpenWork(false);
+                                        setReadMore(false);
+                                        setSelectWork(null);
+                                        setStudentWorkFiles([]);
+                                        setStudentPrepareWorkFile([]);
+                                    }).catch(err => console.log(err))
+                                }}>ส่ง</Button>
                             }
                         </Modal.Footer>
                     </Modal>
