@@ -1,12 +1,32 @@
-import {Grid,Button, Typography} from '@material-ui/core';
+import {Grid,Button, Typography, IconButton} from '@material-ui/core';
 import react from 'react';
 import axios from 'axios';
 import { selectSubjectContext } from './selectSubjectContext';
 import { userContext } from '../userContext';
 import { Modal } from 'react-bootstrap';
+import * as FilePond from 'react-filepond';
+import ThreadReply from './ThreadReply';
+import SendIcon from '@mui/icons-material/Send';
+import AddIcon from '@mui/icons-material/Add';
+import CancelIcon from '@mui/icons-material/Cancel';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'filepond/dist/filepond.min.css';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 
-export default function Teacher(){
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+
+var b64toBlob = require('b64-to-blob');
+
+export default function Teacher() {
+    FilePond.registerPlugin(
+        FilePondPluginFileValidateType,
+        FilePondPluginFileValidateSize,
+        FilePondPluginImageExifOrientation,
+        FilePondPluginImagePreview
+    );
 
     const d = new Date();
     var m = d.getMonth() + 1;
@@ -40,6 +60,10 @@ export default function Teacher(){
     const [thread,setThread] = react.useState([]);
     const [reply,setReply] = react.useState([]);
     const [a,setA] = react.useState('');
+    const [availableBtn, setAvailableBtn] = react.useState(true);
+    const [threadF, setThreadF] = react.useState([]);
+    const [imgBlob, setImgBlob] = react.useState([]);
+    const [mode, setMode] = react.useState(0)
 
     function threadPost(){
         if(user.Student_id){
@@ -130,7 +154,11 @@ export default function Teacher(){
     const [replyDate, setReplyDate] = react.useState([]);
     const [replyTime, setreplyTime] = react.useState([]);
 
-    // const [readMore, setReadMore] = react.useState(false);
+    const [readMore, setReadMore] = react.useState(false);
+    const [files, setFiles] = react.useState([]);
+    const [addImgModal, setAddImgModal] = react.useState(false);
+    const [u ,setU] = react.useState(true);
+    const [selectBlob, setSelectBlob] = react.useState(null);
 
     react.useEffect(() => {
         if(threadData){
@@ -203,6 +231,35 @@ export default function Teacher(){
                                     <br/>
                                     <textarea id='thread' onChange={(e) => setQ(e.target.value)} placeholder="เขียนคำถาม" style={{ width: '100%',height:'100px' }}></textarea>
                                 </Grid>
+                                {threadF.length !== 4 && 
+                                    <Grid item xs={12}>
+                                        <Button style={{width:'100%'}} color='primary' onClick={() => {
+                                            setAddImgModal(true);
+                                            setPostModal(false);
+                                            setMode(1)
+                                        }}>เพิ่มรูป</Button>
+                                    </Grid>
+                                }
+                                {threadF.length !== 0 &&
+                                    <Grid container justifyContent='center' direction='row' style={{overflow:'scroll'}}>
+                                        {imgBlob.map((value,index) => {
+                                            return (
+                                                <Grid item xs={12 / threadF.length} key={`fileUploadNo${index}`}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '1rem', width: '70px' }}>
+                                                        <Button onClick={() => {
+                                                            setPostModal(false);
+                                                            setSelectBlob(value);
+                                                            setMode(1)
+                                                        }}><img style={{ height: '50px', width: '70px'}} alt={index} src={value}/></Button>
+                                                        <Button style={{wigth:'100%'}} color='secondary' onClick={() => {
+                                                            console.log(threadF[index])
+                                                        }}><CancelIcon /></Button>
+                                                    </div>
+                                                </Grid>
+                                            );
+                                        })}
+                                    </Grid>
+                                }
                             </Grid>
                         </Modal.Body>
                         <Modal.Footer style={{display:'flex', justifyContent:'space-around'}}>
@@ -223,7 +280,8 @@ export default function Teacher(){
                 <div>
                     <Modal centered show={showThread} backdrop="static" size="lg" aria-labelledby="contained-modal-title-vcenter" onHide={() => {
                         setAnswer('');
-                        setShowThread(false)
+                        setShowThread(false);
+                        setReadMore(false);
                     }}>
                         <Modal.Header closeButton>
                             <div style={{display: 'flex'}}>
@@ -237,8 +295,27 @@ export default function Teacher(){
                                 <Grid item xs={6} style={{ width: '50%'}}>
                                     <div style={{height:'46vh'}}>
                                         <Typography>คำถาม</Typography>
-                                        <div style={{maxHeight:'46vh',overflow:'scroll'}}>
-                                            <p>{threadData.Detail}</p>
+                                        <div id='T' style={{maxHeight:'46vh',overflow:'scroll'}}>
+                                            {threadData?.Detail.length > 300 ? 
+                                            readMore ? 
+                                                <div>
+                                                    <Typography>{threadData.Detail}</Typography>
+                                                    <div style={{display:'flex',justifyContent:'flex-end'}}>
+                                                        <Button color='primary' onClick={() => setReadMore(false)}>ย่อ</Button>
+                                                    </div>
+                                                </div>
+                                                :
+                                                <div>
+                                                    <div style={{height:'25vh',overflow:'hidden'}}>
+                                                        <Typography>{threadData.Detail}</Typography>
+                                                    </div>
+                                                    <div style={{display:'flex',justifyContent:'flex-end'}}>
+                                                        <Button color='primary' onClick={() => setReadMore(true)}>อ่านต่อ</Button>
+                                                    </div>
+                                                </div>
+                                            :
+                                            <Typography>{threadData.Detail}</Typography>
+                                            }
                                         </div>
                                     </div>
                                 </Grid>
@@ -249,19 +326,8 @@ export default function Teacher(){
                                     reply.map((value,index) => {
                                         if(value.Reply_to === String(threadData.Thread_id)){
                                             return(
-                                                <div id={`reply-${index}`} key={index} style={{ display: 'flex', justifyContent:'flex-start', backgroundColor:'#f3f3f3',margin:'0.5rem 0 0 0',borderRadius:'4px',flexDirection:'column'}}>
-                                                    <div style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
-                                                        <Typography style={{paddingTop:'4px',paddingLeft:'8px',color:'#afafaf'}}>{value.Student_id ? value.Student_id : value.Teacher_id}</Typography>
-                                                            <div style={{ display: 'flex', flexDirection: 'row',paddingTop:'4px',paddingRight:'8px', color: '#afafaf' }}>
-                                                            <Typography style={{ paddingRight: '0.5rem' }}>{replyDate[index] === today ? 'วันนี้' : replyDate[index]}</Typography>
-                                                            <Typography>{replyTime[index]}</Typography>
-                                                        </div>
-                                                    </div>
-                                                    {/*
-                                                    this should be able to expand
-                                                    document.getElementById(`reply-${index}`)?.clientHeight >= 64 ?
-                                                    */}
-                                                    <Typography style={{paddingTop:'0.5vh',paddingLeft:'16px',paddingRight:'8px',paddingBottom:'0.5rem'}}>{value.Detail}</Typography>
+                                                <div key={`replyNo${index}`} style={{ display: 'flex', justifyContent:'flex-start', backgroundColor:'#f3f3f3',margin:'0.5rem 0 0 0',borderRadius:'4px',flexDirection:'column'}}>
+                                                    <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} date={replyDate[index] === today ? 'วันนี้' : replyDate[index]} time={replyTime[index]} content={value.Detail} />
                                                 </div>
                                             )
                                         }
@@ -271,17 +337,50 @@ export default function Teacher(){
                                     null
                                     }
                                     </div>
+                                    <br/>
+                                    {threadF.length !== 0 &&
+                                        <Grid container justifyContent='center' direction='row' style={{overflow:'scroll'}}>
+                                                {imgBlob.map((value,index) => {
+                                                    return (
+                                                        <Grid item xs={12 / threadF.length} key={`fileUploadNo${index}`}>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '1rem', width: '70px' }}>
+                                                                <Button onClick={() => {
+                                                                    setShowThread(false);
+                                                                    setSelectBlob(value);
+                                                                }}><img style={{ height: '50px', width: '70px'}} alt={index} src={value}/></Button>
+                                                                <Button style={{wigth:'100%'}} color='secondary' onClick={() => {
+                                                                    console.log(threadF[index])
+                                                                }}><CancelIcon /></Button>
+                                                            </div>
+                                                        </Grid>
+                                                    );
+                                                })}
+                                        </Grid>
+                                    }
                                     <Grid container style={{marginTop:'1rem'}}>
-                                        <br/>
-                                        <textarea id='answer' value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="เขียนคำตอบ" style={{ width: '100%',height:'50px',maxHeight:'115px',minHeight:'50px' }}></textarea>
-                                    </Grid>
-                                    <Grid container justifyContent='flex-end' style={{marginTop:'1rem'}}>
-                                        {answer === '' ?
-                                        <Button disabled>ตอบ</Button>
-                                        :
-                                        <Button color="primary" onClick={() => ansTheard(answer)}>ตอบ</Button>
-                                        }
-                                    </Grid>    
+                                        <Grid item xs={2}>
+                                            {u || threadF.length !== 4 ?
+                                            <IconButton color="primary" onClick={() => {
+                                                setAddImgModal(true);
+                                                setShowThread(false);
+                                            }}><AddIcon/></IconButton>
+                                            :
+                                            <IconButton disabled><AddIcon/></IconButton>
+                                            }
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <textarea id='answer' value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="เขียนคำตอบ" style={{ width: '100%', height: '50px', maxHeight: '115px', minHeight: '50px' }}></textarea>
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            {answer === '' ?
+                                            <IconButton disabled><SendIcon/></IconButton>
+                                            :
+                                            <IconButton color="primary" onClick={() => {
+                                                ansTheard(answer);
+                                            }}><SendIcon/></IconButton>
+                                            }
+                                        </Grid>
+                                    </Grid> 
                                 </Grid>
                             </Grid>
                         </Modal.Body>
@@ -296,6 +395,143 @@ export default function Teacher(){
                <Typography>เลือกวิชาที่จะแสดง</Typography> 
             </div>
             }
+
+            {/* img modal */}
+            <Modal centered show={selectBlob !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                if(mode === 1){
+                    setSelectBlob(null);
+                    setPostModal(true);
+                    setMode(0)
+                }
+                else{
+                    setSelectBlob(null);
+                    setShowThread(true);
+                }
+            }}>
+                <img src={selectBlob} alt='hok'/>
+            </Modal>
+
+            {/* upload image modal */}
+            <Modal centered show={addImgModal} backdrop="static" aria-labelledby="contained-modal-title-vcenter">
+                <Modal.Header>อัพโหลดรูป</Modal.Header>
+                <Modal.Body>
+                    <Grid container style={{maxHeight:'55vh',overflow:'scroll'}}>
+                        <Grid item xs={12}>
+                            <FilePond.FilePond
+                                files={files}
+                                onupdatefiles={setFiles}
+                                allowMultiple={4 - threadF.length > 1 ? true : false}
+                                maxFiles={4 - threadF.length}
+                                acceptedFileTypes={['image/*']}
+                                allowDrop
+                                name="file"
+                                onaddfilestart={() => {
+                                    setAvailableBtn(false);
+                                }}
+                                onprocessfilerevert={(f) => {
+                                    api.delete('/subject/fileThread',{
+                                        data: {
+                                            name: f.file.name
+                                        }
+                                    })
+                                    .then(res => console.log(res.data))
+                                    .catch(err => console.log(err))
+                                }}
+                                server={
+                                    //need a specific path
+                                    selectSubject && user ? {
+                                        process: `http://localhost:3001/subject/fileThread/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}`,
+                                        revert: null
+                                    }
+                                    :
+                                    null
+                                }
+                                onprocessfile={(err,f) => {
+                                    if(err){
+                                        console.log(err)
+                                    }
+                                    else{
+                                        if (selectSubject && user) {
+                                            api.post('/subject/fileThreadId', {
+                                                name: f.file.name,
+                                                roomId: selectSubject.room,
+                                                subjectId: selectSubject.name,
+                                                userId: user.Student_id ? user.Student_id : user.Teacher_id,
+                                                reply: threadData ? threadData.Thread_id : ''
+                                            })
+                                                .then(res => {
+                                                    setThreadF([...threadF, res.data[0]])
+                                                    api.post('/teacher/image',{
+                                                        filePath: res.data[0].File_Path
+                                                    })
+                                                    .then(res2 => {
+                                                        var blob = b64toBlob(res2.data, "image/*")
+                                                        var blobUrl = URL.createObjectURL(blob);
+                                                        setImgBlob([...imgBlob,blobUrl])
+                                                    })
+                                                    .catch(err2 => console.log(err2))
+                                                })
+                                                .catch(err => console.log(err))
+                                        }
+                                    }
+                                }}
+                                onprocessfiles={() => setAvailableBtn(true)}
+                                credits={false}
+                                labelIdle={`ลากและวางรูปของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด ${4 - threadF.length} รูป`}
+                            />
+                        </Grid>
+                    </Grid>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Grid container justifyContent='space-between'>
+                        {availableBtn ? 
+                        files.length === 0 ?
+                            <Button color='secondary' onClick={() => {
+                                if(mode === 1){
+                                    setFiles([]);
+                                    setAddImgModal(false);
+                                    setMode(0)
+                                    setPostModal(true);
+                                }
+                                else{
+                                    setFiles([]);
+                                    setAddImgModal(false);
+                                    setShowThread(true);
+                                }
+                            }}>ยกเลิก</Button>
+                            :
+                            <Button color='secondary' onClick={() => {
+                                console.log(threadF.length)
+                                console.log(imgBlob.length)
+                            }}>ยกเลิก</Button>
+                        :
+                        <Button disabled>ยกเลิก</Button>
+                        }
+                        {availableBtn ? 
+                        files.length === 0 ?
+                            <Button disabled>อัพโหลด</Button>
+                            :
+                            <Button color='primary' onClick={() => {
+                                if(mode === 1){
+                                    setFiles([]);
+                                    setU(false);
+                                    setAddImgModal(false);
+                                    setMode(0)
+                                    setPostModal(true);
+                                }
+                                else{
+                                    setFiles([]);
+                                    setU(false);
+                                    setAddImgModal(false);
+                                    setShowThread(true);
+                                }
+                            }}>อัพโหลด</Button>
+                        :
+                        <Button disabled>อัพโหลด</Button>
+                        }
+                    </Grid>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
