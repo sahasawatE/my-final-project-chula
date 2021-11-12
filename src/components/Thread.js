@@ -63,7 +63,7 @@ export default function Teacher() {
     const [availableBtn, setAvailableBtn] = react.useState(true);
     const [threadF, setThreadF] = react.useState([]);
     const [imgBlob, setImgBlob] = react.useState([]);
-    const [mode, setMode] = react.useState(0)
+    const [mode, setMode] = react.useState(0);
 
     function threadPost(){
         if(user.Student_id){
@@ -125,6 +125,15 @@ export default function Teacher() {
         else{
             return null
         }
+    }
+
+    function ansTreadImg(fileList,ans){
+        api.post('/subject/postThreadImg',{
+            file: fileList,
+            ans: ans
+        })
+        .then(res => console.log(res.data))
+        .catch(err => console.log(err))
     }
 
     const [showThread, setShowThread] = react.useState(false);
@@ -323,11 +332,12 @@ export default function Teacher() {
                                     <Typography>คำตอบ</Typography>
                                     <div style={{maxHeight:'36vh', overflow:'scroll'}} ref={commentSection}>
                                     {reply ? 
+                                    //bug
                                     reply.map((value,index) => {
                                         if(value.Reply_to === String(threadData.Thread_id)){
                                             return(
                                                 <div key={`replyNo${index}`} style={{ display: 'flex', justifyContent:'flex-start', backgroundColor:'#f3f3f3',margin:'0.5rem 0 0 0',borderRadius:'4px',flexDirection:'column'}}>
-                                                    <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} date={replyDate[index] === today ? 'วันนี้' : replyDate[index]} time={replyTime[index]} content={value.Detail} />
+                                                    <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} date={replyDate[index] === today ? 'วันนี้' : replyDate[index]} time={replyTime[index]} content={value.Detail} img={value.Example_file} />
                                                 </div>
                                             )
                                         }
@@ -373,11 +383,22 @@ export default function Teacher() {
                                         </Grid>
                                         <Grid item xs={2}>
                                             {answer === '' ?
-                                            <IconButton disabled><SendIcon/></IconButton>
-                                            :
-                                            <IconButton color="primary" onClick={() => {
-                                                ansTheard(answer);
-                                            }}><SendIcon/></IconButton>
+                                                threadF.length === 0 ? 
+                                                    <IconButton disabled><SendIcon/></IconButton>
+                                                    :
+                                                    <IconButton color="primary" onClick={() => {
+                                                        ansTreadImg(threadF, answer)
+                                                    }}><SendIcon/></IconButton>
+                                                :
+                                                <IconButton color="primary" onClick={() => {
+                                                    if(threadF.length === 0){
+                                                        ansTheard(answer);
+                                                    }
+                                                    else{
+                                                        //bug
+                                                        ansTreadImg(threadF, answer);
+                                                    }
+                                                }}><SendIcon/></IconButton>
                                             }
                                         </Grid>
                                     </Grid> 
@@ -401,6 +422,11 @@ export default function Teacher() {
                 if(mode === 1){
                     setSelectBlob(null);
                     setPostModal(true);
+                    setMode(0)
+                }
+                else if(mode === 2){
+                    setSelectBlob(null);
+                    setShowThread(true);
                     setMode(0)
                 }
                 else{

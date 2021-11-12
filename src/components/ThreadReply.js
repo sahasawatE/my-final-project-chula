@@ -1,8 +1,45 @@
 import react from 'react';
-import {Typography,Button} from '@material-ui/core';
+import {Typography,Button,Grid} from '@material-ui/core';
+import axios from 'axios';
+
+var b64toBlob = require('b64-to-blob');
 
 export default function ThreadReply(props){
+    const api = axios.create({ baseURL: 'http://localhost:3001/' })
     const [readMore, setReadMore] = react.useState(false);
+    const [replyImg, setReplyImg] = react.useState([]);
+
+    function imgAns(v) {
+        api.post('subject/img', {
+            id: v.split('[')[1].split(']')[0].split(',')
+        })
+            .then(async(res2) => {
+                var imgBlob = [];
+                await Promise.all(
+                    res2.data.map(async v1 => {
+                        await api.post('/teacher/image', {
+                            filePath: v1
+                        })
+                            .then(res => {
+                                var blob = b64toBlob(res.data, "image/*");
+                                var blobUrl = URL.createObjectURL(blob);
+                                imgBlob.push(blobUrl);
+                            })
+                            .catch(err => console.log(err))
+                        return null
+                    })
+                )
+                setReplyImg(imgBlob)
+            })
+            .catch(err2 => console.log(err2))
+    }
+
+    react.useEffect(() => {
+        if(props.img){
+            imgAns(props.img)
+        }
+    },[])
+
     return(
         <div>
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -32,6 +69,18 @@ export default function ThreadReply(props){
                 :
                 <Typography style={{ paddingTop: '0.5vh', paddingLeft: '16px', paddingRight: '8px', paddingBottom: '0.5rem' }}>{props.content}</Typography>
             }
+            <Grid container justifyContent='center'>
+                <Grid item xs={12} style={{display:'flex', flexDirection:'row', overflow:'scroll'}}>
+                    {replyImg.length !== 0 && replyImg.map((value, index) => {
+
+                        return (
+                            <Button key={`imgReplyNo${index}`} onClick={() => console.log(value)}>
+                                <img src={value} alt={`img${index}`} style={{ height: '4rem', width: '4rem' }} />
+                            </Button>
+                        );
+                    })}
+                </Grid>
+            </Grid>
         </div>
     );
 }
