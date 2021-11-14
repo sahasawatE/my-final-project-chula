@@ -3,6 +3,7 @@ import react from 'react';
 import axios from 'axios';
 import { selectSubjectContext } from './selectSubjectContext';
 import { userContext } from '../userContext';
+import { selectImgBlobReply } from './selectImgBlobReply';
 import { Modal } from 'react-bootstrap';
 import * as FilePond from 'react-filepond';
 import ThreadReply from './ThreadReply';
@@ -64,6 +65,7 @@ export default function Teacher() {
     const [threadF, setThreadF] = react.useState([]);
     const [imgBlob, setImgBlob] = react.useState([]);
     const [mode, setMode] = react.useState(0);
+    const [selectImgReply, setSelectImgReply] = react.useState(null);
 
     function threadPost(){
         if(user.Student_id){
@@ -132,7 +134,11 @@ export default function Teacher() {
             file: fileList,
             ans: ans
         })
-        .then(res => console.log(res.data))
+        .then(res => {
+            setThreadF([]);
+            setImgBlob([]);
+            setA(res.data);
+        })
         .catch(err => console.log(err))
     }
 
@@ -261,7 +267,18 @@ export default function Teacher() {
                                                             setMode(1)
                                                         }}><img style={{ height: '50px', width: '70px'}} alt={index} src={value}/></Button>
                                                         <Button style={{wigth:'100%'}} color='secondary' onClick={() => {
-                                                            console.log(threadF[index])
+                                                            api.delete('/subject/cancelReplyImg', {
+                                                                data: {
+                                                                    fileList: [threadF[index]]
+                                                                }
+                                                            })
+                                                                .then(res => {
+                                                                    if (res.data === 'canceled') {
+                                                                        setThreadF(threadF.filter(e => e !== threadF[index]))
+                                                                        setImgBlob(imgBlob.filter(e => e !== imgBlob[index]))
+                                                                    }
+                                                                })
+                                                                .catch(err => console.log(err))
                                                         }}><CancelIcon /></Button>
                                                     </div>
                                                 </Grid>
@@ -332,13 +349,14 @@ export default function Teacher() {
                                     <Typography>คำตอบ</Typography>
                                     <div style={{maxHeight:'36vh', overflow:'scroll'}} ref={commentSection}>
                                     {reply ? 
-                                    //bug
                                     reply.map((value,index) => {
                                         if(value.Reply_to === String(threadData.Thread_id)){
                                             return(
-                                                <div key={`replyNo${index}`} style={{ display: 'flex', justifyContent:'flex-start', backgroundColor:'#f3f3f3',margin:'0.5rem 0 0 0',borderRadius:'4px',flexDirection:'column'}}>
-                                                    <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} date={replyDate[index] === today ? 'วันนี้' : replyDate[index]} time={replyTime[index]} content={value.Detail} img={value.Example_file} />
-                                                </div>
+                                                <selectImgBlobReply.Provider value={{ setSelectImgReply, setShowThread }} key={`replyNo${index}`}>
+                                                    <div style={{ display: 'flex', justifyContent: 'flex-start', backgroundColor: '#f3f3f3', margin: '0.5rem 0 0 0', borderRadius: '4px', flexDirection: 'column' }}>
+                                                        <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} date={replyDate[index] === today ? 'วันนี้' : replyDate[index]} time={replyTime[index]} content={value.Detail} img={value.Example_file} />
+                                                    </div>
+                                                </selectImgBlobReply.Provider>
                                             )
                                         }
                                         return null;
@@ -359,7 +377,18 @@ export default function Teacher() {
                                                                     setSelectBlob(value);
                                                                 }}><img style={{ height: '50px', width: '70px'}} alt={index} src={value}/></Button>
                                                                 <Button style={{wigth:'100%'}} color='secondary' onClick={() => {
-                                                                    console.log(threadF[index])
+                                                                    api.delete('/subject/cancelReplyImg', {
+                                                                        data: {
+                                                                            fileList: [threadF[index]]
+                                                                        }
+                                                                    })
+                                                                        .then(res => {
+                                                                            if (res.data === 'canceled') {
+                                                                                setThreadF(threadF.filter(e => e !== threadF[index]))
+                                                                                setImgBlob(imgBlob.filter(e => e !== imgBlob[index]))
+                                                                            }
+                                                                        })
+                                                                        .catch(err => console.log(err))
                                                                 }}><CancelIcon /></Button>
                                                             </div>
                                                         </Grid>
@@ -395,7 +424,6 @@ export default function Teacher() {
                                                         ansTheard(answer);
                                                     }
                                                     else{
-                                                        //bug
                                                         ansTreadImg(threadF, answer);
                                                     }
                                                 }}><SendIcon/></IconButton>
@@ -437,6 +465,14 @@ export default function Teacher() {
                 <img src={selectBlob} alt='hok'/>
             </Modal>
 
+            {/* img reply modal */}
+            <Modal centered show={selectImgReply !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                setSelectImgReply(null);
+                setShowThread(true);
+            }}>
+                <img src={selectImgReply} alt='hok' />
+            </Modal>
+
             {/* upload image modal */}
             <Modal centered show={addImgModal} backdrop="static" aria-labelledby="contained-modal-title-vcenter">
                 <Modal.Header>อัพโหลดรูป</Modal.Header>
@@ -446,25 +482,45 @@ export default function Teacher() {
                             <FilePond.FilePond
                                 files={files}
                                 onupdatefiles={setFiles}
-                                allowMultiple={4 - threadF.length > 1 ? true : false}
+                                allowMultiple={true}
                                 maxFiles={4 - threadF.length}
                                 acceptedFileTypes={['image/*']}
                                 allowDrop
                                 name="file"
                                 onaddfilestart={() => {
-                                    setAvailableBtn(false);
+                                    if(files.length !== 0){
+                                        setAvailableBtn(false);
+                                    }
+                                    else{
+                                        setAvailableBtn(true);
+                                    }
                                 }}
                                 onprocessfilerevert={(f) => {
-                                    api.delete('/subject/fileThread',{
-                                        data: {
-                                            name: f.file.name
-                                        }
-                                    })
-                                    .then(res => console.log(res.data))
-                                    .catch(err => console.log(err))
+                                    if (selectSubject && user) {
+                                        api.delete('/subject/fileThread', {
+                                            data: {
+                                                name: f.file.name,
+                                                roomId: selectSubject.room,
+                                                subjectId: selectSubject.name,
+                                                userId: user.Student_id ? user.Student_id : user.Teacher_id,
+                                                threadId: threadData ? threadData.Thread_id : ''
+                                            }
+                                        })
+                                            .then(res => console.log(res.data))
+                                            .then(() => {
+                                                files.map(v => {
+                                                    if(v.file === f.file){
+                                                        setImgBlob(imgBlob.filter(e => e !== imgBlob[files.indexOf(v)]))
+                                                    }
+                                                    return null
+                                                })
+                                            })
+                                            .then(setFiles(files.filter(e => e.file !== f.file)))
+                                            .then(setThreadF(threadF.filter(e => e.File_Path !== `/Users/yen/Desktop/FinalProject/component/final/src/components/ThreadFile/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}/${f.file.name}`)))
+                                            .catch(err => console.log(err))
+                                    }
                                 }}
                                 server={
-                                    //need a specific path
                                     selectSubject && user ? {
                                         process: `http://localhost:3001/subject/fileThread/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}`,
                                         revert: null
@@ -516,7 +572,7 @@ export default function Teacher() {
                                 if(mode === 1){
                                     setFiles([]);
                                     setAddImgModal(false);
-                                    setMode(0)
+                                    setMode(0);
                                     setPostModal(true);
                                 }
                                 else{
@@ -527,8 +583,21 @@ export default function Teacher() {
                             }}>ยกเลิก</Button>
                             :
                             <Button color='secondary' onClick={() => {
-                                console.log(threadF.length)
-                                console.log(imgBlob.length)
+                                api.delete('/subject/cancelReplyImg',{
+                                    data:{
+                                        fileList: threadF
+                                    }
+                                })
+                                .then(res => {
+                                    if (res.data === 'canceled'){
+                                        setThreadF([]);
+                                        setImgBlob([]);
+                                        setFiles([]);
+                                        setAddImgModal(false);
+                                        setShowThread(true);
+                                    }
+                                })
+                                .catch(err => console.log(err))
                             }}>ยกเลิก</Button>
                         :
                         <Button disabled>ยกเลิก</Button>
@@ -537,21 +606,24 @@ export default function Teacher() {
                         files.length === 0 ?
                             <Button disabled>อัพโหลด</Button>
                             :
-                            <Button color='primary' onClick={() => {
-                                if(mode === 1){
-                                    setFiles([]);
-                                    setU(false);
-                                    setAddImgModal(false);
-                                    setMode(0)
-                                    setPostModal(true);
-                                }
-                                else{
-                                    setFiles([]);
-                                    setU(false);
-                                    setAddImgModal(false);
-                                    setShowThread(true);
-                                }
-                            }}>อัพโหลด</Button>
+                            mode === 1 ?
+                                <Button color='primary' onClick={() => {
+                                        setFiles([]);
+                                        setU(false);
+                                        setAddImgModal(false);
+                                        setMode(0)
+                                        setPostModal(true);
+                                }}>อัพโหลด</Button>
+                                :
+                                imgBlob.length === threadF.length ?
+                                    <Button color='primary' onClick={() => {
+                                            setFiles([]);
+                                            setU(false);
+                                            setAddImgModal(false);
+                                            setShowThread(true);
+                                    }}>อัพโหลด</Button>
+                                    :
+                                    <Button disabled>อัพโหลด</Button>
                         :
                         <Button disabled>อัพโหลด</Button>
                         }

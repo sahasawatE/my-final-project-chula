@@ -1,6 +1,7 @@
 import react from 'react';
-import {Typography,Button,Grid} from '@material-ui/core';
+import { Typography, Button, Grid } from '@material-ui/core';
 import axios from 'axios';
+import {selectImgBlobReply} from './selectImgBlobReply';
 
 var b64toBlob = require('b64-to-blob');
 
@@ -8,6 +9,8 @@ export default function ThreadReply(props){
     const api = axios.create({ baseURL: 'http://localhost:3001/' })
     const [readMore, setReadMore] = react.useState(false);
     const [replyImg, setReplyImg] = react.useState([]);
+
+    const { setSelectImgReply, setShowThread} = react.useContext(selectImgBlobReply);
 
     function imgAns(v) {
         api.post('subject/img', {
@@ -74,7 +77,10 @@ export default function ThreadReply(props){
                     {replyImg.length !== 0 && replyImg.map((value, index) => {
 
                         return (
-                            <Button key={`imgReplyNo${index}`} onClick={() => console.log(value)}>
+                            <Button key={`imgReplyNo${index}`} onClick={() => {
+                                setSelectImgReply(value);
+                                setShowThread(false);
+                            }}>
                                 <img src={value} alt={`img${index}`} style={{ height: '4rem', width: '4rem' }} />
                             </Button>
                         );
