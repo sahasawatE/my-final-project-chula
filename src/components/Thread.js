@@ -67,14 +67,15 @@ export default function Teacher() {
     const [mode, setMode] = react.useState(0);
     const [selectImgReply, setSelectImgReply] = react.useState(null);
 
-    function threadPost(){
+    function threadPost(id){
         if(user.Student_id){
             api.post('/subject/PostThread', {
                 Student_id: user.Student_id,
                 Subject_id: selectSubject.name,
                 Room_id: selectSubject.room,
                 Title: title,
-                Detail: q
+                Detail: q,
+                fileList: JSON.stringify(id)
             }).then(result => {
                 setRes(result.data);
                 setPostModal(false);
@@ -88,15 +89,20 @@ export default function Teacher() {
                 Subject_id: selectSubject.name,
                 Room_id: selectSubject.room,
                 Title: title,
-                Detail: q
+                Detail: q,
+                fileList: JSON.stringify(id)
             }).then(result => {
                 setRes(result.data);
                 setPostModal(false);
+                setTitle('');
+                setQ('');
             }).catch(err => console.log(err))
         }
         else{
             return null
         }
+        setThreadF([]);
+        setImgBlob([]);
     }
 
     function ansTheard(a){
@@ -127,6 +133,8 @@ export default function Teacher() {
         else{
             return null
         }
+        setThreadF([]);
+        setImgBlob([]);
     }
 
     function ansTreadImg(fileList,ans){
@@ -144,6 +152,8 @@ export default function Teacher() {
 
     const [showThread, setShowThread] = react.useState(false);
     const [threadData, setThreadData] = react.useState(null);
+    const [threadDataImg, setThreadDataImg] = react.useState(null);
+    const [threadImg, setThreadImg] = react.useState(null);
     const [answer, setAnswer] = react.useState('');
 
     const commentSection = react.useRef(null);
@@ -164,10 +174,38 @@ export default function Teacher() {
         }
     },[res,selectSubject,a])
 
+    react.useEffect(() => {
+        if (threadDataImg !== false){
+            api.post('/subject/img',{
+                id: threadDataImg
+            })
+            .then(async res => {
+                var imgBlob = [];
+                await Promise.all(
+                    res.data.map(async v1 => {
+                        await api.post('/teacher/image', {
+                            filePath: v1
+                        })
+                            .then(res => {
+                                var blob = b64toBlob(res.data, "image/*");
+                                var blobUrl = URL.createObjectURL(blob);
+                                imgBlob.push(blobUrl);
+                            })
+                            .catch(err => console.log(err))
+                        return null
+                    })
+                )
+                setThreadImg(imgBlob)
+            })
+            .catch(err => console.log(err))
+        }
+    }, [threadDataImg])
+
     const [threadDate, setThreadDate] = react.useState(null);
     const [threadtime, setThreadTime] = react.useState(null);
     const [replyDate, setReplyDate] = react.useState([]);
     const [replyTime, setreplyTime] = react.useState([]);
+    const [selectThreadImg, setSelectThreadImg] = react.useState(null);
 
     const [readMore, setReadMore] = react.useState(false);
     const [files, setFiles] = react.useState([]);
@@ -215,6 +253,7 @@ export default function Teacher() {
                                 <Button onClick={() => {
                                     setShowThread(true);
                                     setThreadData(value);
+                                    setThreadDataImg(value.Example_file !== '' && value.Example_file.split('[')[1].split(']')[0].split(','))
                                 }} style={{width:'100%'}}>
                                     <div style={{display:'flex',flexDirection:'column'}} >
                                         <div>{value.Title}</div>
@@ -239,12 +278,12 @@ export default function Teacher() {
                                 <Grid item xs={12} style={{paddingBottom:'1rem'}}>
                                     <label htmlFor="title">ชื่อเรื่อง</label>
                                     <br/>
-                                    <input style={{width:'100%'}} id="title" type="text" onChange={(e) => setTitle(e.target.value)} placeholder="เขียนชื่อหัวข้อที่ต้องการถามโพสต์" />
+                                    <input style={{width:'100%'}} value={title} id="title" type="text" onChange={(e) => setTitle(e.target.value)} placeholder="เขียนชื่อหัวข้อที่ต้องการถามโพสต์" />
                                 </Grid>
                                 <Grid item xs={12}>
                                     <label htmlFor="title">คำถาม</label>
                                     <br/>
-                                    <textarea id='thread' onChange={(e) => setQ(e.target.value)} placeholder="เขียนคำถาม" style={{ width: '100%',height:'100px' }}></textarea>
+                                    <textarea id='thread' value={q} onChange={(e) => setQ(e.target.value)} placeholder="เขียนคำถาม" style={{ width: '100%',height:'100px' }}></textarea>
                                 </Grid>
                                 {threadF.length !== 4 && 
                                     <Grid item xs={12}>
@@ -295,7 +334,14 @@ export default function Teacher() {
                                 setQ('');
                             }}>ยกเลิก</Button>
                             {title !== '' && q !== '' ? 
-                                <Button variant="outlined" color="primary" onClick={() => threadPost()}>โพสต์</Button>
+                                <Button variant="outlined" color="primary" onClick={() => {
+                                    var id = [];
+                                    threadF.map(v => {
+                                        id.push(v.File_Thread_id)
+                                        return null
+                                    })
+                                    threadPost(id)
+                                }}>โพสต์</Button>
                             :
                                 <Button variant="outlined" color="primary" disabled onClick={() => threadPost()}>โพสต์</Button>
                             }
@@ -343,6 +389,19 @@ export default function Teacher() {
                                             <Typography>{threadData.Detail}</Typography>
                                             }
                                         </div>
+                                        <Grid container>
+                                            {threadData?.Example_file !== '' && threadData.Example_file.split('[')[1].split(']')[0].split(',').map((value,index) => {
+                                                return(
+                                                    <Button onClick={() => {
+                                                        setSelectThreadImg(threadImg[index]);
+                                                        setShowThread(false);
+                                                    }} key={`threadImgNO${value}`}>
+                                                        <img src={threadImg[index]} alt={`threadImgNO${value}`} style={{width:'4rem', height:'4rem'}} />
+                                                    </Button>
+                                                );
+                                            })
+                                            }
+                                        </Grid>
                                     </div>
                                 </Grid>
                                 <Grid item xs={6} style ={{width:'50%'}}>
@@ -471,6 +530,14 @@ export default function Teacher() {
                 setShowThread(true);
             }}>
                 <img src={selectImgReply} alt='hok' />
+            </Modal>
+
+            {/* img thread modal */}
+            <Modal centered show={selectThreadImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                setSelectThreadImg(null);
+                setShowThread(true);
+            }}>
+                <img src={selectThreadImg} alt='hok' />
             </Modal>
 
             {/* upload image modal */}
@@ -609,6 +676,7 @@ export default function Teacher() {
                             mode === 1 ?
                                 <Button color='primary' onClick={() => {
                                         setFiles([]);
+                                        // setImgBlob([]);
                                         setU(false);
                                         setAddImgModal(false);
                                         setMode(0)
@@ -618,6 +686,7 @@ export default function Teacher() {
                                 imgBlob.length === threadF.length ?
                                     <Button color='primary' onClick={() => {
                                             setFiles([]);
+                                            // setImgBlob([]);
                                             setU(false);
                                             setAddImgModal(false);
                                             setShowThread(true);

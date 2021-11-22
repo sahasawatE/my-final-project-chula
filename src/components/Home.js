@@ -2,13 +2,14 @@ import react from 'react';
 import { userContext } from '../userContext';
 import { Grid, makeStyles, Paper, Typography, Button } from '@material-ui/core';
 import axios from 'axios';
-import Todo from './notification/Todo';
+import SubjectList from './SubjectList'
 import DaySub from './TimetableComponent/DaySub';
 import SubjectDocs from './subjectDetail/SubjectDocs';
 import {subjectContext} from './subjectContext';
 import Thread from './Thread';
 import { selectSubjectContext } from './selectSubjectContext';
 import PersonIcon from '@material-ui/icons/Person';
+import Link from '@mui/material/Link';
 
 const useStyles = makeStyles((theme) => ({
     paperRight: {
@@ -61,7 +62,7 @@ export default function Home(props,{ forwardedRef }) {
                 Room_id: selectSubject.room
             }).then(res => setSelectSubjectName(res.data[0].Subject_name)).catch(err => console.log(err))
         }
-    },[selectSubject])
+    },[selectSubject,setSelectSubject])
 
     function getSubjectTime(){
         api.post('/subject/subjectTime',{
@@ -234,52 +235,74 @@ export default function Home(props,{ forwardedRef }) {
                 </Grid>
                 <Grid item className='timetable' xs={3}>
                     <Paper className={classes.paperRight}>
-                        <Todo todo={null}/>
+                        <subjectContext.Provider value={{ selectSubject, setSelectSubject }}>
+                            <SubjectList user={user.Teacher_id ? user.Teacher_id : ''} roomId={user.Teacher_id ? '' : user.Room_id} />
+                        </subjectContext.Provider>
                     </Paper>
                 </Grid>
             </Grid>
-            <Grid container justifyContent="center" alignItems='baseline' direction="row">
+            <Grid container justifyContent="center" direction="row">
                 <Grid item xs={6}>
-                    <Paper className={classes.paperLeftBottom}>
-                        <Grid container justifyContent="center" direction="column">
-                            <SubjectDocs teacher={user.Teacher_id} room={user.Room_id} selectedSubject={selectSubject}/>
-                        </Grid>
-                    </Paper>
-                </Grid>
-                <Grid item xs={4} className={classes.paperRightBottom}>
-                    <Paper style={{ marginBottom: '2vh', backgroundColor: '#1B4E9C'}}>
-                        <Grid container justifyContent="center" direction="column">
-                            <Button style={{width:'100%',color:'white'}}>
-                                <b style={{ color: 'white', padding: '0rem' }}>รายชื่อนักเรียน</b>
-                            </Button>
-                        </Grid>
-                    </Paper>
-                    <Paper style={{ marginBottom: '2vh' }}>
-                        <Grid container justifyContent="center" direction="column">
-                            <b style={{ color: '#4171B9', padding: '0.5rem' }}>ครูประจำชั้น</b>
-                            <div>
-                                <Grid style={{maxWidth:'33.35vw'}} container direction="row" wrap="nowrap">
-                                    <Grid item xs={2} style={{display:'flex',justifyContent:'center'}}>
-                                        <PersonIcon fontSize="large" />
-                                    </Grid>
-                                    {queryTeacher ? 
-                                    <Grid item xs={10} zeroMinWidth style={{display:'flex',flexDirection:'column'}}>
-                                        <Typography noWrap>{queryTeacher.Teacher_FristName} {queryTeacher.Teacher_LastName}</Typography>
-                                        <Typography noWrap>{queryTeacher.Teacher_Phone}</Typography>
-                                        <Typography noWrap>{queryTeacher.Teacher_Email}</Typography>
-                                    </Grid>
-                                    :
-                                    null
-                                    }
+                    {/* query a study link */}
+                    <div className={classes.paperLeftBottom}>
+                        <Paper style={{ marginBottom: '2vh', height: '2.2rem'}}>
+                            <Grid container>
+                                <Grid item xs={3} style={{ marginTop: '0.35rem', display: 'flex', justifyContent: 'center'}}>
+                                    <Typography>ลิ้งค์ห้องเรียน : </Typography>
                                 </Grid>
-                            </div>
-                        </Grid>
-                    </Paper>
-                    <Paper>
-                        <Grid container justifyContent="center" direction="column">
-                            <Thread/>
-                        </Grid>
-                    </Paper>
+                                <Grid item xs={9} zeroMinWidth style={{ marginTop: '0.35rem', display: 'flex', justifyContent: 'flex-start'}}>
+                                    <Link noWrap href="https://www.youtube.com/watch?v=GG7fLOmlhYg" target={'_blank'} underline="hover">
+                                        <Typography>https://www.youtube.com/watch?v=GG7fLOmlhYg</Typography>
+                                    </Link>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                        <Paper>
+                            <Grid container justifyContent="center" direction="column">
+                                <SubjectDocs teacher={user.Teacher_id} room={user.Room_id} selectedSubject={selectSubject} />
+                            </Grid>
+                        </Paper>
+                    </div>
+                </Grid>
+                <Grid item xs={4}>
+                    <div className={classes.paperRightBottom}>
+                        {user.Teacher_id ? 
+                            <Paper style={{ marginBottom: '2vh', backgroundColor: '#1B4E9C' }}>
+                                <Grid container justifyContent="center" direction="column">
+                                    <Button style={{ width: '100%', color: 'white' }}>
+                                        <b style={{ color: 'white' }}>รายชื่อนักเรียน</b>
+                                    </Button>
+                                </Grid>
+                            </Paper>
+                            :
+                            <Paper style={{ marginBottom: '2vh' }}>
+                                <Grid container justifyContent="center" direction="column">
+                                    <b style={{ color: '#4171B9', padding: '0.5rem' }}>ครูประจำชั้น</b>
+                                    <div>
+                                        <Grid style={{ maxWidth: '33.35vw' }} container direction="row" wrap="nowrap">
+                                            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center' }}>
+                                                <PersonIcon fontSize="large" />
+                                            </Grid>
+                                            {queryTeacher ?
+                                                <Grid item xs={10} zeroMinWidth style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <Typography noWrap>{queryTeacher.Teacher_FristName} {queryTeacher.Teacher_LastName}</Typography>
+                                                    <Typography noWrap>{queryTeacher.Teacher_Phone}</Typography>
+                                                    <Typography noWrap>{queryTeacher.Teacher_Email}</Typography>
+                                                </Grid>
+                                                :
+                                                null
+                                            }
+                                        </Grid>
+                                    </div>
+                                </Grid>
+                            </Paper>
+                        }
+                        <Paper>
+                            <Grid container justifyContent="center" direction="column">
+                                <Thread/>
+                            </Grid>
+                        </Paper>
+                    </div>
                 </Grid>
             </Grid>
         </div>
