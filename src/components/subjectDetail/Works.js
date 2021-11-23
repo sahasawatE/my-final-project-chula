@@ -291,23 +291,24 @@ export default function Works(props) {
                                                 maxFiles={3}
                                                 allowDrop
                                                 acceptedFileTypes={['application/pdf','image/*']}
-                                                allowRemove={false}
+                                                // allowRemove={false}
                                                 name="file"
                                                 credits={false}
-                                                allowRevert={false}
-                                                // onprocessfilerevert={(f) => {
-                                                //     api.delete('/teacher/deleteOnePrepare',{
-                                                //         data : {
-                                                //             path : f.file.name,
-                                                //             Room_id: props.subject.Room_id,
-                                                //             Teacher_id: props.user.Teacher_id,
-                                                //             Subject_id: props.subject.Subject_id,
-                                                //             Work_Name: workName
-                                                //         }
-                                                //     }).then(console.log('deleted')).catch(err => console.log(err))
-                                                // }}
+                                                allowRevert
+                                                onprocessfilerevert={(f) => {
+                                                    api.delete('/teacher/deleteOnePrepare',{
+                                                        data : {
+                                                            path : f.file.name,
+                                                            Room_id: props.subject.Room_id,
+                                                            Teacher_id: props.user.Teacher_id,
+                                                            Subject_id: props.subject.Subject_id,
+                                                            Work_Name: workName
+                                                        }
+                                                    }).then(console.log('deleted')).catch(err => console.log(err))
+                                                }}
                                                 server={{
-                                                    process : `http://localhost:3001/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`
+                                                    process : `http://localhost:3001/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
+                                                    revert: null
                                                 }}
                                                 labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                             />
@@ -492,6 +493,7 @@ export default function Works(props) {
         const [readMore, setReadMore] = react.useState(false);
         const [studentWorkFiles, setStudentWorkFiles] = react.useState([]);
         const [isSubmit, setIsSubmit] = react.useState(false);
+        const [studentAddFile, setStudentAddFile] = react.useState([]);
 
         function studentAllWorks(roomId,subjectId){
             api.post('/subject/studentWorks',{
@@ -643,34 +645,40 @@ export default function Works(props) {
                                 </div>
                                 {!isSubmit &&
                                     <div>
-                                        {/* not complete yet */}
                                         <FilePond.FilePond
-                                            files={workFile}
-                                            onupdatefiles={setWorkFile}
+                                            files={studentAddFile}
+                                            onupdatefiles={setStudentAddFile}
                                             allowMultiple={true}
                                             maxFiles={3}
                                             allowDrop
                                             acceptedFileTypes={['application/pdf','image/*']}
-                                            allowRemove={false}
+                                            // allowRemove={false}
                                             name="file"
                                             credits={false}
-                                            allowRevert={false}
-                                            // onprocessfilerevert={(f) => {
-                                            //     //edit this function
-                                            //     api.delete('/teacher/deleteOnePrepare',{
-                                            //         data : {
-                                            //             path : f.file.name,
-                                            //             Room_id: props.subject.Room_id,
-                                            //             Student_id: props.user.Student_id,
-                                            //             Subject_id: props.subject.Subject_id,
-                                            //             Work_Name: selectWork.Work_Name
-                                            //         }
-                                            //     }).then(console.log('deleted')).catch(err => console.log(err))
-                                            // }}
+                                            allowRevert
                                             server={{
-                                                process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`
+                                                process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
+                                                revert: null
                                             }}
                                             onprocessfiles={() => setStudentUpload(true)}
+                                            onprocessfilerevert={(f) => {
+                                                // api.delete('/student/deletePrepareWorkFile', {
+                                                //     data: {
+                                                //         file: value
+                                                //     }
+                                                // }).catch(err => console.log(err))
+                                                console.log(f.file.name);
+                                                console.log(studentAddFile)
+                                                // api.delete('/teacher/deleteOnePrepare', {
+                                                //     data: {
+                                                //         path: f.file.name,
+                                                //         Room_id: props.subject.Room_id,
+                                                //         Teacher_id: props.user.Teacher_id,
+                                                //         Subject_id: props.subject.Subject_id,
+                                                //         Work_Name: workName
+                                                //     }
+                                                // }).then(console.log('deleted')).catch(err => console.log(err))
+                                            }}
                                             labelIdle='ลากและวางงานของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                         />
                                     </div>
@@ -685,7 +693,7 @@ export default function Works(props) {
                                             workName: selectWork.Work_Name,
                                             score: selectWork.Score
                                         })
-                                        .then(setWorkFile([]))
+                                        .then(setStudentAddFile([]))
                                         .then(setStudentUpload(false))
                                         .catch(err => console.log(err))
                                         studentPrepareWork()
@@ -730,11 +738,16 @@ export default function Works(props) {
                         </Modal.Body>
                         <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
                             <Button variant="outlined" color="secondary" onClick={() => {
-                                setStudentOpenWork(false);
-                                setReadMore(false);
-                                setSelectWork(null);
-                                setStudentWorkFiles([]);
-                                setStudentPrepareWorkFile([]);
+                                if(studentAddFile.length === 0){
+                                    setStudentOpenWork(false);
+                                    setReadMore(false);
+                                    setSelectWork(null);
+                                    setStudentWorkFiles([]);
+                                    setStudentPrepareWorkFile([]);
+                                }
+                                else{
+                                    alert('กรุณาอัพโหลดไฟล์ก่อนปิดกน้าต่างนี้')
+                                }
                             }}>ปิด</Button>
                             {studentPrepareWorkFile.length === 0 ?
                             <Button variant="outlined" disabled>ส่ง</Button>
@@ -753,20 +766,25 @@ export default function Works(props) {
                                 }}>แก้ไข</Button>
                                 :
                                 <Button variant="outlined" color="primary" onClick={() => {
-                                    api.post('/student/submitwork',{
-                                        Subject_id: props.subject.Subject_id,
-                                        Student_id: props.user.Student_id,
-                                        Room_id: props.subject.Room_id,
-                                        Teacher_id: props.subject.Teacher_id,
-                                        workName: selectWork.Work_Name,
-                                        score: selectWork.Score
-                                    }).then(() => {
-                                        setStudentOpenWork(false);
-                                        setReadMore(false);
-                                        setSelectWork(null);
-                                        setStudentWorkFiles([]);
-                                        setStudentPrepareWorkFile([]);
-                                    }).catch(err => console.log(err))
+                                    if(studentAddFile.length !== 0){
+                                        alert('ต้องอัพโหลดไฟล์ก่อนส่งเสมอ')
+                                    }
+                                    else{
+                                        api.post('/student/submitwork', {
+                                            Subject_id: props.subject.Subject_id,
+                                            Student_id: props.user.Student_id,
+                                            Room_id: props.subject.Room_id,
+                                            Teacher_id: props.subject.Teacher_id,
+                                            workName: selectWork.Work_Name,
+                                            score: selectWork.Score
+                                        }).then(() => {
+                                            setStudentOpenWork(false);
+                                            setReadMore(false);
+                                            setSelectWork(null);
+                                            setStudentWorkFiles([]);
+                                            setStudentPrepareWorkFile([]);
+                                        }).catch(err => console.log(err))
+                                    }
                                 }}>ส่ง</Button>
                             }
                         </Modal.Footer>

@@ -149,6 +149,12 @@ export default function Documents(props){
         }
     }, [props.user,props.subject]);
 
+    react.useEffect(() => {
+        if(filesInFolder.length === 0){
+            setUploadFileWithoutFolder(false);
+        }
+    }, [filesInFolder,setFilesInFolder])
+
     const [uploadFiles,setUploadFiles] = react.useState([]);
     const [folderName, setFolderName] = react.useState('');
     const [createContent, setCreateContent] = react.useState(false);
@@ -248,8 +254,8 @@ export default function Documents(props){
                                         setTabValue(v);
                                         return e
                                     }} aria-label="basic tabs example">
-                                        <Tab label="สร้างโฟเดอร์" />
-                                        <Tab label="อัพโหลดเอกสาร" />
+                                        <Tab label="สร้างโฟเดอร์" disabled={folderCreate} />
+                                        <Tab label="อัพโหลดเอกสาร" disabled={folderCreate} />
                                     </Tabs>
                                     <br/>
                                     {tabValue === 0 ?
@@ -285,8 +291,12 @@ export default function Documents(props){
                                                     maxFiles={3}
                                                     acceptedFileTypes={['application/pdf']}
                                                     allowDrop
+                                                    allowRevert
                                                     // allowRemove={false}
-                                                    server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`}
+                                                    server={props.subject && {
+                                                        process: `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
+                                                        revert: null
+                                                    }}
                                                     name="file"
                                                     credits={false}
                                                     onprocessfiles={async () => {
@@ -308,30 +318,19 @@ export default function Documents(props){
                                                                     setFilesInFolder(res.data)
                                                                 }
                                                             })
-                                                            .then(setUploadFiles([]))
+                                                            // .then(setUploadFiles([]))
                                                             .catch(err => console.log(err))
                                                     }}
                                                     onprocessfilerevert={(f) => {
-                                                        api.delete('/teacher/deleteFile', {
-                                                            data: {
-                                                                File_Path: newFolderName,
-                                                                Teacher_id: props.user.Teacher_id,
-                                                                Subject_id: props.subject.Subject_id,
-                                                                Room_id: props.subject.Room_id
+                                                        filesInFolder.map(v => {
+                                                            if(v.File_Path.split('/').at(-1) === f.file.name){
+                                                                deleteHandle(v)
                                                             }
+                                                            return null
                                                         })
-                                                            .then(console.log('deleted'))
-                                                            .catch(err => console.log(err))
                                                     }}
                                                     labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                                 />
-                                                {filesInFolder.length > 0 && filesInFolder.map((value,index) => {
-                                                    return(
-                                                        <div key={`fileUploadNo${index}`}>
-                                                            {value.File_Doc_id}
-                                                        </div>
-                                                    );
-                                                })}
                                             </div>
                                         }
                                         </Grid>
@@ -345,10 +344,14 @@ export default function Documents(props){
                                             maxFiles={3}
                                             acceptedFileTypes={['application/pdf']}
                                             allowDrop
-                                            allowRemove={false}
-                                            server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`}
+                                            // allowRemove={false}
+                                            server={props.subject && {
+                                                process: `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
+                                                revert: null
+                                            }}
                                             name="file"
                                             credits={false}
+                                            allowRevert
                                             onprocessfiles={async () => {
                                                 await api.post('/subject/docCreateFolder', {
                                                     Room_id: props.subject.Room_id,
@@ -364,7 +367,29 @@ export default function Documents(props){
                                                     folder: 'noFolder'
                                                 })
                                                 .catch(err => console.log(err))
+                                                await api.post('/subject/inFolder', {
+                                                    Room_id: props.subject.Room_id,
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Teacher_id: props.user.Teacher_id,
+                                                    folders: 'noFolder'
+                                                })
+                                                    .then(res => {
+                                                        if (res.data !== 'This path does not exits.') {
+                                                            setFilesInFolder(res.data)
+                                                        }
+                                                    })
+                                                    // .then(setUploadFiles([]))
+                                                    .catch(err => console.log(err))
                                                 setUploadFileWithoutFolder(true);
+                                            }}
+                                            onprocessfilerevert={(f) => {
+                                                filesInFolder.map(v => {
+                                                    if (v.File_Path.split('/').at(-1) === f.file.name) {
+                                                        deleteHandle(v)
+                                                        setFilesInFolder(filesInFolder.filter(e => e !== v))
+                                                    }
+                                                    return null
+                                                })
                                             }}
                                             labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                         />
@@ -380,6 +405,7 @@ export default function Documents(props){
                                         setFolderName('');
                                         setNewFolderName('');
                                         setFolderCrete(false);
+                                        setFilesInFolder([]);
                                     }
                                     else {
                                         await Promise.all(
@@ -401,6 +427,7 @@ export default function Documents(props){
                                         setFolderName('');
                                         setNewFolderName('');
                                         setFolderCrete(false);
+                                        setFilesInFolder([]);
                                     }
                                 }
                                 else{
@@ -442,7 +469,7 @@ export default function Documents(props){
                             setEnterFolder(false);
                             setSelectFolder('');
                         }}>
-                            <Modal.Header closeButton>{selectFolder}</Modal.Header>
+                            <Modal.Header closeButton><FolderIcon color='action' /><Typography style={{ marginLeft: '0.5rem' }}>{selectFolder}</Typography></Modal.Header>
                             <Modal.Body>
                                 <Grid container direction='column'>
                                     <div>
@@ -453,18 +480,48 @@ export default function Documents(props){
                                             maxFiles={3}
                                             acceptedFileTypes={['application/pdf']}
                                             allowDrop
-                                            allowRemove={false}
-                                            server={props.subject && `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`}
+                                            allowRevert
+                                            server={props.subject && {
+                                                process: `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
+                                                revert: null
+                                            }}
                                             name="file"
                                             credits={false}
                                             onprocessfiles={() => {
                                                 setFinistUploadFile(true);
                                             }}
+                                            onprocessfilerevert={(f) => {
+                                                api.delete('/subject/CancelFiles', {
+                                                    data: {
+                                                        path: `${dir}/${selectFolder}`,
+                                                        name: f.file.name
+                                                    }
+                                                })
+                                                .then(setUploadFiles(uploadFiles.filter(e => e.file.name !== f.file.name)))
+                                                .catch(err => console.log(err))
+                                            }}
                                             labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                         />
-                                        {finishUploadFile ? 
+                                        {finishUploadFile && uploadFiles.length !== 0 ? 
                                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                            {uploadFiles.length !== 0 && <Button color='secondary'>ยกเลิก</Button>}
+                                            {uploadFiles.length !== 0 && <Button color='secondary' onClick={async() => {
+                                                    await Promise.all(
+                                                        uploadFiles.map(async v => {
+                                                            await api.delete('/subject/CancelFiles', {
+                                                                data: {
+                                                                    path: `${dir}/${selectFolder}`,
+                                                                    name: v.file.name
+                                                                }
+                                                            })
+                                                                .catch(err => console.log(err))
+                                                        })
+                                                    );
+                                                    await api.post('/subject/updateFileList', {
+                                                        path: `${dir}/${selectFolder}`
+                                                    }).catch(err2 => console.log(err2))
+                                                    setUploadFiles([]);
+                                                    setFinistUploadFile(false);
+                                            }}>ยกเลิก</Button>}
                                             <Button color='primary' onClick={async() => {
                                                 await api.post('/teacher/uploadFileInFolder', {
                                                     Subject_id: props.subject.Subject_id,

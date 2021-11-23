@@ -50,29 +50,6 @@ export default function SubjectDocs(props){
             }).catch(error => console.log(error)) 
         }
     },[selectedSubject,room,teacherId]);
-    // const clip = [
-    //     {
-    //         date: '02-09-2021',
-    //         subjectName: "วิชา1",
-    //         chapter: 'บท1',
-    //         title: 'เรื่องที่1',
-    //         clipTitle:'บทที่1 เรื่องที่1 ตอนที่1'
-    //     },
-    //     {
-    //         date: '02-09-2021',
-    //         subjectName: "วิชา1",
-    //         chapter: 'บท1',
-    //         title: 'เรื่องที่2',
-    //         clipTitle: 'บทที่1 เรื่องที่2 ตอนที่1'
-    //     },
-    //     {
-    //         date: '02-09-2021',
-    //         subjectName: "วิชา1",
-    //         chapter: 'บท2',
-    //         title: 'เรื่องที่1',
-    //         clipTitle: 'บทที่2 เรื่องที่1 ตอนที่1'
-    //     }
-    // ];
 
     return(
         <div>
