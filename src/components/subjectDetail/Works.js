@@ -17,6 +17,7 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 var b64toBlob = require('b64-to-blob');
 
 export default function Works(props) {
+    const today = new Date();
     FilePond.registerPlugin(FilePondPluginFileValidateType)
     const api = axios.create({
         baseURL: 'http://localhost:3001/'
@@ -236,7 +237,7 @@ export default function Works(props) {
                                                 <div style={{width:'70%'}}>
                                                     <Form.Group>
                                                         <Form.Label>กำหนดส่ง</Form.Label>
-                                                        <Form.Control type='datetime-local' disabled onChange={(e) => setWorkDeadline(e.target.value)} />
+                                                            <Form.Control type='datetime-local' disabled onChange={(e) => setWorkDeadline(e.target.value)} />
                                                     </Form.Group>
                                                 </div>
                                                 <div style={{ width: '25%' }} >
@@ -261,7 +262,15 @@ export default function Works(props) {
                                                 <div style={{width:'70%'}}>
                                                     <Form.Group>
                                                         <Form.Label>กำหนดส่ง</Form.Label>
-                                                        <Form.Control type='datetime-local' onChange={(e) => setWorkDeadline(e.target.value)} />
+                                                            <Form.Control type='datetime-local' value={new Date(today.setDate(today.getDate() + 1)).toISOString().split('.')[0].substring(0, 16)} onChange={(e) => {
+                                                            if(new Date(e.target.value) < new Date()){
+                                                                alert('กรุณาเลือกวันและเวลาที่เหมาะสม');
+                                                                setWorkDeadline(new Date(today.setDate(today.getDate() + 1)).toISOString().split('.')[0].substring(0, 16))
+                                                            }
+                                                            else{
+                                                                setWorkDeadline(e.target.value)
+                                                            }
+                                                        }} />
                                                     </Form.Group>
                                                 </div>
                                                 <div style={{ width: '25%' }} >
@@ -465,9 +474,27 @@ export default function Works(props) {
                                     <div>
                                         {submittedStudent.map((value,index) => {
                                             return(
-                                                <div style={{display:'flex',justifyContent:'space-between',flexDirection:'row'}} key={`listStudentThatSubmittedWorkNO${index}`}>
-                                                    <Typography>{value.Student_id}</Typography>
-                                                    {value.files.length !== 0 && <Typography>{value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์</Typography>}
+                                                <div key={`listStudentThatSubmittedWorkNO${index}`}>
+                                                    {new Date(value.Submit_date) < new Date(selectWork.End) &&
+                                                        <Button onClick={async() => {
+                                                            // console.log(value);
+                                                            localStorage.setItem('studentSubmittedWork',JSON.stringify(value))
+                                                            window.open('/class','_blank');
+                                                        }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width:'100%' }}>
+                                                            <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
+                                                            <b style={{ color: 'green' }}>ส่งตามเวลา</b>
+                                                        </Button>
+                                                    }
+                                                    {new Date(value.Submit_date) > new Date(selectWork.End) && 
+                                                        <Button onClick={async() => {
+                                                            // console.log(value);
+                                                            localStorage.setItem('studentSubmittedWork', JSON.stringify(value))
+                                                            window.open('/class', '_blank');
+                                                        }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width:'100%' }}>
+                                                            <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
+                                                            <b style={{ color: 'red' }}>ส่งช้า</b>
+                                                        </Button>
+                                                    }
                                                 </div>
                                             );
                                         })}
@@ -494,6 +521,7 @@ export default function Works(props) {
         const [studentWorkFiles, setStudentWorkFiles] = react.useState([]);
         const [isSubmit, setIsSubmit] = react.useState(false);
         const [studentAddFile, setStudentAddFile] = react.useState([]);
+        const [hok, setHok] = react.useState([]);
 
         function studentAllWorks(roomId,subjectId){
             api.post('/subject/studentWorks',{
@@ -660,24 +688,46 @@ export default function Works(props) {
                                                 process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
                                                 revert: null
                                             }}
-                                            onprocessfiles={() => setStudentUpload(true)}
-                                            onprocessfilerevert={(f) => {
-                                                // api.delete('/student/deletePrepareWorkFile', {
-                                                //     data: {
-                                                //         file: value
-                                                //     }
-                                                // }).catch(err => console.log(err))
-                                                console.log(f.file.name);
-                                                console.log(studentAddFile)
-                                                // api.delete('/teacher/deleteOnePrepare', {
-                                                //     data: {
-                                                //         path: f.file.name,
-                                                //         Room_id: props.subject.Room_id,
-                                                //         Teacher_id: props.user.Teacher_id,
-                                                //         Subject_id: props.subject.Subject_id,
-                                                //         Work_Name: workName
-                                                //     }
-                                                // }).then(console.log('deleted')).catch(err => console.log(err))
+                                            onprocessfiles={async () => {
+                                                await api.post('/student/updateWorkSubmit', {
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Student_id: props.user.Student_id,
+                                                    Room_id: props.subject.Room_id,
+                                                    Teacher_id: props.subject.Teacher_id,
+                                                    workName: selectWork.Work_Name,
+                                                    score: selectWork.Score
+                                                })
+                                                    .catch(err => console.log(err))
+
+                                                await api.post('/student/prepareWork', {
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Student_id: props.user.Student_id,
+                                                    Room_id: props.subject.Room_id,
+                                                    Teacher_id: props.subject.Teacher_id,
+                                                    workName: selectWork.Work_Name,
+                                                    score: selectWork.Score
+                                                })
+                                                    .then(res => setHok(res.data))
+                                                    .catch(err => console.log(err))
+
+                                                setStudentUpload(true);
+                                            }}
+                                            onprocessfilerevert={async (f) => {
+                                                await api.delete('/student/deletePrepareWorkFile', {
+                                                    data: {
+                                                        file: hok.filter(e => e.File_Path.split('/').at(-1) === f.file.name)[0]
+                                                    }
+                                                }).catch(err => console.log(err))
+
+                                                await api.post('/student/updateWorkSubmit', {
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Student_id: props.user.Student_id,
+                                                    Room_id: props.subject.Room_id,
+                                                    Teacher_id: props.subject.Teacher_id,
+                                                    workName: selectWork.Work_Name,
+                                                    score: selectWork.Score
+                                                })
+                                                    .catch(err => console.log(err))
                                             }}
                                             labelIdle='ลากและวางงานของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
                                         />
@@ -685,17 +735,8 @@ export default function Works(props) {
                                 }
                                 <div style={{ paddingBottom: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                                     {studentUpload && <Button color="primary" onClick={async () => {
-                                        await api.post('/student/updateWorkSubmit',{
-                                            Subject_id: props.subject.Subject_id,
-                                            Student_id: props.user.Student_id,
-                                            Room_id: props.subject.Room_id,
-                                            Teacher_id: props.subject.Teacher_id,
-                                            workName: selectWork.Work_Name,
-                                            score: selectWork.Score
-                                        })
-                                        .then(setStudentAddFile([]))
-                                        .then(setStudentUpload(false))
-                                        .catch(err => console.log(err))
+                                        setStudentAddFile([])
+                                        setStudentUpload(false)
                                         studentPrepareWork()
                                     }}>อัพโหลด</Button>}
                                 </div>
@@ -770,6 +811,10 @@ export default function Works(props) {
                                         alert('ต้องอัพโหลดไฟล์ก่อนส่งเสมอ')
                                     }
                                     else{
+                                        if(new Date(selectWork.End) < new Date()){
+                                            alert('ส่งช้า')
+                                        }
+
                                         api.post('/student/submitwork', {
                                             Subject_id: props.subject.Subject_id,
                                             Student_id: props.user.Student_id,
@@ -777,6 +822,8 @@ export default function Works(props) {
                                             Teacher_id: props.subject.Teacher_id,
                                             workName: selectWork.Work_Name,
                                             score: selectWork.Score
+                                        }).then(() => {
+                                            alert('ส่งเรียบร้อย')
                                         }).then(() => {
                                             setStudentOpenWork(false);
                                             setReadMore(false);
