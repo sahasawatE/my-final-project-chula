@@ -10,6 +10,7 @@ import Thread from './Thread';
 import { selectSubjectContext } from './selectSubjectContext';
 import PersonIcon from '@material-ui/icons/Person';
 import Link from '@mui/material/Link';
+import Drawer from '@mui/material/Drawer';
 
 const useStyles = makeStyles((theme) => ({
     paperRight: {
@@ -55,6 +56,8 @@ export default function Home(props,{ forwardedRef }) {
     const [queryTeacher, setQueryTeacher] = react.useState(null);
     const [selectSubjectName, setSelectSubjectName] = react.useState('');
 
+    const [openStudentList, setOpenStudentList] =react.useState(false);
+
     react.useEffect(() => {
         if(selectSubject){
             api.post('/subject/subjectDetail', {
@@ -63,6 +66,14 @@ export default function Home(props,{ forwardedRef }) {
             }).then(res => setSelectSubjectName(res.data[0].Subject_name)).catch(err => console.log(err))
         }
     },[selectSubject,setSelectSubject])
+
+    const toggleDrawer = (open) => (event) => {
+        if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+
+        setOpenStudentList(open);
+    };
 
     function getSubjectTime(){
         api.post('/subject/subjectTime',{
@@ -269,7 +280,12 @@ export default function Home(props,{ forwardedRef }) {
                         {user.Teacher_id ? 
                             <Paper style={{ marginBottom: '2vh', backgroundColor: '#1B4E9C' }}>
                                 <Grid container justifyContent="center" direction="column">
-                                    <Button style={{ width: '100%', color: 'white' }}>
+                                    <Button style={{ width: '100%', color: 'white' }} onClick={
+                                        // api.post('/teacher/allStudents',{
+
+                                        // })
+                                        toggleDrawer(true)
+                                    }>
                                         <b style={{ color: 'white' }}>รายชื่อนักเรียน</b>
                                     </Button>
                                 </Grid>
@@ -305,6 +321,19 @@ export default function Home(props,{ forwardedRef }) {
                     </div>
                 </Grid>
             </Grid>
+
+            {/* students Drawer */}
+            <div>
+                <Drawer
+                    anchor={'bottom'}
+                    open={openStudentList}
+                    onClose={toggleDrawer(false)}
+                >
+                    <div>
+                        12345656778112354123412346457456856789980578
+                    </div>
+                </Drawer>
+            </div>
         </div>
     );
 }
