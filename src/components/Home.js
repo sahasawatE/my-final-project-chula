@@ -1,6 +1,6 @@
 import react from 'react';
 import { userContext } from '../userContext';
-import { Grid, makeStyles, Paper, Typography, Button } from '@material-ui/core';
+import { Grid, makeStyles, Paper, Typography, Button, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
 import axios from 'axios';
 import SubjectList from './SubjectList'
 import DaySub from './TimetableComponent/DaySub';
@@ -10,7 +10,13 @@ import Thread from './Thread';
 import { selectSubjectContext } from './selectSubjectContext';
 import PersonIcon from '@material-ui/icons/Person';
 import Link from '@mui/material/Link';
-import Drawer from '@mui/material/Drawer';
+import { Modal } from 'react-bootstrap';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import EmailIcon from '@mui/icons-material/Email';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const useStyles = makeStyles((theme) => ({
     paperRight: {
@@ -58,6 +64,13 @@ export default function Home(props,{ forwardedRef }) {
 
     const [openStudentList, setOpenStudentList] =react.useState(false);
 
+    const [allStudents, setAllStudents] = react.useState([]);
+    const [roomllStudents, setRoomAllStudents] = react.useState('');
+
+    const [selectStudent, setSelectStudent] = react.useState(null);
+
+    const [searchStudent, setSearchStudent] = react.useState('');
+
     react.useEffect(() => {
         if(selectSubject){
             api.post('/subject/subjectDetail', {
@@ -66,14 +79,6 @@ export default function Home(props,{ forwardedRef }) {
             }).then(res => setSelectSubjectName(res.data[0].Subject_name)).catch(err => console.log(err))
         }
     },[selectSubject,setSelectSubject])
-
-    const toggleDrawer = (open) => (event) => {
-        if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-            return;
-        }
-
-        setOpenStudentList(open);
-    };
 
     function getSubjectTime(){
         api.post('/subject/subjectTime',{
@@ -280,12 +285,27 @@ export default function Home(props,{ forwardedRef }) {
                         {user.Teacher_id ? 
                             <Paper style={{ marginBottom: '2vh', backgroundColor: '#1B4E9C' }}>
                                 <Grid container justifyContent="center" direction="column">
-                                    <Button style={{ width: '100%', color: 'white' }} onClick={
-                                        // api.post('/teacher/allStudents',{
-
-                                        // })
-                                        toggleDrawer(true)
-                                    }>
+                                    <Button style={{ width: '100%', color: 'white' }} onClick={() => {
+                                        if(selectSubject){
+                                            api.post('/teacher/allStudents', {
+                                                Room_id: selectSubject.room
+                                            })
+                                            .then(res => {
+                                                api.post('/teacher/askRoom',{
+                                                    roomId: selectSubject.room
+                                                }).then(res2 => {
+                                                    setRoomAllStudents(res2.data[0].Room_class);
+                                                    setAllStudents(res.data);
+                                                }).catch(err2 => console.log(err2))
+                                            })
+                                            .then(setOpenStudentList(true))
+                                            .catch(err => console.log(err))
+                                        }
+                                        else{
+                                            // setOpenStudentList(true);
+                                            alert('กรุณาเลือกวิชาที่จะแสดง')
+                                        }
+                                    }}>
                                         <b style={{ color: 'white' }}>รายชื่อนักเรียน</b>
                                     </Button>
                                 </Grid>
@@ -322,17 +342,189 @@ export default function Home(props,{ forwardedRef }) {
                 </Grid>
             </Grid>
 
-            {/* students Drawer */}
+            {/* students modal */}
             <div>
-                <Drawer
-                    anchor={'bottom'}
-                    open={openStudentList}
-                    onClose={toggleDrawer(false)}
-                >
-                    <div>
-                        12345656778112354123412346457456856789980578
-                    </div>
-                </Drawer>
+                <Modal show={openStudentList} size="lg" aria-labelledby="contained-modal-title-vcenter" centered onHide={() => {
+                    setOpenStudentList(false);
+                    setSelectStudent(null);
+                    setSearchStudent('');
+                }}>
+                    <Modal.Header closeButton>{selectSubject ? `รายชื่อนักเรียน ห้อง${roomllStudents}` : 'กรุณาเลือกวิชาก่อน'}</Modal.Header>
+                    {selectSubject && 
+                        <Modal.Body>
+                            <Grid container justifyContent='space-between' direction='row'>
+                                <Grid item xs={6}>
+                                    {allStudents.length === 0 ?
+                                        <Typography>ว่างเปล่า</Typography>
+                                        :
+                                        <Grid container direction='column'>
+                                            <Grid item xs={12}>
+                                                <input type='text' onChange={(e) => setSearchStudent(e.target.value)} placeholder='ค้นหานักเรียน' style={{ width: '100%', borderRadius: '6px', backgroundColor:'#ECECEC',border:'none',padding:'0.5rem',MozUserFocus:'none'}}/>
+                                                {searchStudent.length !== 0 &&
+                                                <Grid container direction='column' style={{zIndex:'100',position:'absolute'}}>
+                                                    <Grid item xs={12}>
+                                                        <Paper style={{width:'48%',marginTop:'0.5rem',maxHeight:'32vh',overflow:'scroll'}}>
+                                                            <div style={{padding:'0.5rem'}}>
+                                                                <List>
+                                                                    {allStudents.filter(e => {
+                                                                        const regex = new RegExp(`^${searchStudent}`,'gi');
+                                                                        return e.Student_id.match(regex) || e.Student_FirstName.match(regex) || e.Student_LastName.match(regex)
+                                                                    }).map((value, index) => {
+                                                                        return (
+                                                                            <ListItem button onClick={() => {
+                                                                                api.post('/teacher/studentParent', {
+                                                                                    Student_id: value.Student_id
+                                                                                })
+                                                                                    .then(res => {
+                                                                                        setSelectStudent({
+                                                                                            student: value,
+                                                                                            parent: res.data[0]
+                                                                                        })
+                                                                                        setSearchStudent('')
+                                                                                    })
+                                                                                    .catch(err => console.log(err))
+                                                                            }} key={`searchResultNO${index}`}>
+                                                                                <ListItemIcon><AccountCircleIcon sx={{ fontSize: 40 }} /></ListItemIcon>
+                                                                                <ListItemText primary={value.Student_id} secondary={`${value.Student_FirstName} ${value.Student_LastName}`} />
+                                                                            </ListItem>
+                                                                        );
+                                                                    })}
+                                                                </List>
+                                                            </div>
+                                                        </Paper>    
+                                                    </Grid>
+                                                </Grid>
+                                                }
+                                            </Grid>
+                                            <br/>
+                                            <Grid item xs={12}>
+                                                <List>
+                                                    {allStudents.map((value, index) => {
+                                                        return (
+                                                            <ListItem style={selectStudent?.student === value ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius: '0.5rem' } : null} button onClick={() => {
+                                                                api.post('/teacher/studentParent', {
+                                                                    Student_id: value.Student_id
+                                                                })
+                                                                    .then(res => {
+                                                                        setSelectStudent({
+                                                                            student: value,
+                                                                            parent: res.data[0]
+                                                                        })
+                                                                    })
+                                                                    .catch(err => console.log(err))
+                                                            }} key={`studentId${index}`}>
+                                                                <ListItemIcon><AccountCircleIcon sx={{ fontSize: 40 }} /></ListItemIcon>
+                                                                <ListItemText primary={value.Student_id} secondary={`${value.Student_FirstName} ${value.Student_LastName}`} />
+                                                            </ListItem>
+                                                        );
+                                                    })}
+                                                </List>
+                                            </Grid>
+                                        </Grid>
+                                    }
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Grid container justifyContent='center' direction='column'>
+                                        {selectStudent ?
+                                        <div style={{ paddingLeft: '1rem', overflow: 'scroll', maxHeight: '65vh',width:'100%'}}>
+                                            <Grid container justifyContent='center' direction='row'>
+                                                <Grid item xs={4}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
+                                                <Grid item xs={8}>
+                                                    <Grid container justifyContent='flex-start' direction='column'>
+                                                        <Grid item xs={12}><Typography>{selectStudent.student.Student_id}</Typography></Grid>
+                                                        <Grid item xs={12}><Typography>{`${selectStudent.student.Student_FirstName} ${selectStudent.student.Student_LastName}`}</Typography></Grid>
+                                                        <Grid item xs={12}><Typography>{`นักเรียนห้อง ${roomllStudents}`}</Typography></Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                            <br/>
+                                            <Grid item xs={10} style={{paddingLeft:'2rem'}}>
+                                                <Grid container justifyContent='flex-start' direction='column'>
+                                                    {selectStudent.student.Student_Phone.length !== 0 &&
+                                                    <a href={`tel:${selectStudent.student.Student_Phone}`}>
+                                                        <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                            <Grid item xs={2}><LocalPhoneIcon/></Grid>
+                                                            <Grid item xs={10}>{selectStudent.student.Student_Phone}</Grid>
+                                                        </Grid>
+                                                    </a>}
+                                                    {selectStudent.student.Student_Email.length !== 0 && 
+                                                    <a href={`mailto:${selectStudent.student.Student_Email}`} target="_blank" rel="noreferrer">
+                                                        <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                            <Grid item xs={2}><EmailIcon/></Grid>
+                                                            <Grid item xs={10}>{selectStudent.student.Student_Email}</Grid>
+                                                        </Grid>
+                                                    </a>}
+                                                    {selectStudent.student.Student_Address.length !== 0 && 
+                                                    <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                        <Grid item xs={2}><LocationOnIcon/></Grid>
+                                                        <Grid item xs={10}>{selectStudent.student.Student_Address}</Grid>
+                                                    </Grid>}
+                                                    {selectStudent.student.Student_LineId.length !== 0 && 
+                                                    <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                        <Grid item xs={2}><img alt='hok1' style={{height:'1.8rem',width:'1.8rem'}} src="https://img.icons8.com/color/144/000000/line-me.png"/></Grid>
+                                                        <Grid item xs={10}>{selectStudent.student.Student_LineId}</Grid>
+                                                    </Grid>}
+                                                    {selectStudent.student.Student_Facebook.length !== 0 &&
+                                                    <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                        <Grid item xs={2}><img alt='hok2' style={{height:'1.8rem',width:'1.8rem'}} src="https://img.icons8.com/fluency/144/000000/facebook-new.png"/></Grid>
+                                                        <Grid item xs={10}>{selectStudent.student.Student_Facebook}</Grid>
+                                                    </Grid>}
+                                                </Grid>
+                                            </Grid>
+                                            <br/>
+                                            <br/>
+                                            <Grid container justifyContent='center' direction='row'>
+                                                <Grid item xs={4}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
+                                                <Grid item xs={8}>
+                                                    <Grid container justifyContent='flex-start' direction='column'>
+                                                        <Grid item xs={12}><Typography>{`${selectStudent.parent.Parent_FirstName} ${selectStudent.parent.Parent_LastName}`}</Typography></Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                            <br/>
+                                            <Grid item xs={10} style={{paddingLeft:'2rem'}}>
+                                                <Grid container justifyContent='flex-start' direction='column'>
+                                                    {selectStudent.parent.Parent_phone.length  !== 0 &&
+                                                    <a href={`tel:${selectStudent.parent.Parent_phone}`}>
+                                                        <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                            <Grid item xs={2}><LocalPhoneIcon/></Grid>
+                                                            <Grid item xs={10}>{selectStudent.parent.Parent_phone}</Grid>
+                                                        </Grid>
+                                                    </a>}
+                                                    {selectStudent.parent.Parent_Email.length !== 0 && 
+                                                    <a href={`mailto:${selectStudent.parent.Parent_Email}`} target="_blank" rel="noreferrer">
+                                                        <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                            <Grid item xs={2}><EmailIcon/></Grid>
+                                                            <Grid item xs={10}>{selectStudent.parent.Parent_Email}</Grid>
+                                                        </Grid>
+                                                    </a>}
+                                                    {selectStudent.parent.Parent_Address.length !== 0 && 
+                                                    <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                        <Grid item xs={2}><LocationOnIcon/></Grid>
+                                                        <Grid item xs={10}>{selectStudent.parent.Parent_Address}</Grid>
+                                                    </Grid>}
+                                                    {selectStudent.parent.Parent_LineId.length !== 0 && 
+                                                    <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                        <Grid item xs={2}><img alt='hok3' style={{height:'1.8rem',width:'1.8rem'}} src="https://img.icons8.com/color/144/000000/line-me.png"/></Grid>
+                                                        <Grid item xs={10}>{selectStudent.parent.Parent_LineId}</Grid>
+                                                    </Grid>}
+                                                    {selectStudent.parent.Parent_Facebook.length !== 0 &&
+                                                    <Grid container style={{paddingBottom:'0.5rem'}}>
+                                                        <Grid item xs={2}><img alt='hok4' style={{height:'1.8rem',width:'1.8rem'}} src="https://img.icons8.com/fluency/144/000000/facebook-new.png"/></Grid>
+                                                        <Grid item xs={10}>{selectStudent.parent.Parent_Facebook}</Grid>
+                                                    </Grid>}
+                                                </Grid>
+                                            </Grid>
+                                        </div>
+                                        :
+                                        <div style={{display:'flex', justifyContent:'center', color:'GrayText'}}><Typography>--- เลือกนักเรียนเพื่อแสดง ---</Typography></div>
+                                        }
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Modal.Body>
+                    }
+                </Modal>
             </div>
         </div>
     );
