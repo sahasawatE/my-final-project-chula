@@ -11,7 +11,6 @@ import './App.css';
 import axios from 'axios';
 import {selectSubjectContext} from './components/selectSubjectContext';
 
-
 export default function App() {
   const api = axios.create({
     baseURL: 'http://localhost:3001/',
@@ -70,7 +69,7 @@ export default function App() {
           <Redirect to='/login'/>
           }
         </Route>
-        <Route exact path='/class'>
+        <Route exact path='/studentWork'>
           {localStorage.getItem('auth-token') ? 
           <Class forwardedRef={classRef}/>
           :
