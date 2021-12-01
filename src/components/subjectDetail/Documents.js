@@ -1,5 +1,6 @@
 import react from 'react';
-import { Button, Grid, ListItem, ListItemText, List, Typography } from "@material-ui/core";
+import { Button, Grid, List, Typography, IconButton } from "@material-ui/core";
+import {  ListItem, ListItemButton, ListItemText } from '@mui/material';
 import axios from 'axios';
 import {Tab, Tabs} from '@mui/material'
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
@@ -187,7 +188,6 @@ export default function Documents(props){
             return(
                 <Grid container justifyContent='center' direction='column'>
                     <Button variant='text' style={{ width: '100%', color: '#4377ED' }} onClick={() => setCreateContent(true)}>สร้างเนื้อหา</Button>
-                    <br/>
                     <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%'}}>
                         {folders.length === 0 ?
                             <Typography>ว่างเปล่า</Typography>
@@ -195,46 +195,50 @@ export default function Documents(props){
                             folders.filter(p => p !== `${dir}/noFolder`).length === 0 && noFolderFiles.length === 0 ?
                                 <Typography>ว่างเปล่า</Typography>
                                 :
-                                <List style={{ width: '90%' }}>
+                                <List style={{ width: '100%' }}>
                                     {noFolderFiles.length !== 0 && noFolderFiles.map((value, index) => {
                                         return (
-                                            <Grid key={`folderNo${index}`} container direction='row'>
-                                                <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <ListItem button onClick={() => {
+                                            <ListItem
+                                            key={`noFolderNo${index}`}
+                                            disablePadding
+                                            secondaryAction={
+                                                <IconButton color='secondary' onClick={() => {
+                                                    setModalDeleteFile(true);
+                                                    setDataDelete(value);
+                                                }}>
+                                                    <DeleteForeverIcon />
+                                                </IconButton >
+                                            }>
+                                                <ListItemButton onClick={() => {
                                                         getFile(value.File_Path.split('/').at(-1));
-                                                    }}>
-                                                        <InsertDriveFileIcon />
-                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('/').at(-1)}</ListItemText>
-                                                    </ListItem>
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                    <Button style={{ height: '100%' }} color='secondary' onClick={() => {
-                                                        setModalDeleteFile(true);
-                                                        setDataDelete(value);
-                                                    }}><DeleteForeverIcon /></Button>
-                                                </Grid>
-                                            </Grid>
+                                                }}>
+                                                    <InsertDriveFileIcon />
+                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('/').at(-1)}</ListItemText>
+                                                </ListItemButton>
+                                            </ListItem>
                                         );
                                     })}
                                     {folders.map((value, index) => {
                                         if (value.split('/').at(-1) !== 'noFolder') {
                                             return (
-                                                <Grid key={`folderNo${index}`} container direction='row'>
-                                                    <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
-                                                        <ListItem button onClick={() => {
-                                                            enterF(value.split('/').at(-1))
-                                                        }}>
-                                                            <FolderIcon />
-                                                            <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
-                                                        </ListItem>
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        <Button style={{ height: '100%' }} color='secondary' onClick={() => {
-                                                            setDeleteFolder(value);
-                                                            setModalDeleteFolder(true)
-                                                        }}><DeleteForeverIcon /></Button>
-                                                    </Grid>
-                                                </Grid>
+                                                <ListItem
+                                                key={`folderNo${index}`}
+                                                disablePadding
+                                                secondaryAction={
+                                                    <IconButton color='secondary' onClick={() => {
+                                                        setDeleteFolder(value);
+                                                        setModalDeleteFolder(true)
+                                                    }}>
+                                                        <DeleteForeverIcon />
+                                                    </IconButton >
+                                                }>
+                                                    <ListItemButton onClick={() => {
+                                                        enterF(value.split('/').at(-1))
+                                                    }}>
+                                                        <FolderIcon />
+                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
+                                                    </ListItemButton>
+                                                </ListItem>
                                             );
                                         }
                                         else {
@@ -543,21 +547,26 @@ export default function Documents(props){
                                         {filesInFolder.length !== 0 ? 
                                         <div>{filesInFolder.map((value, index) => {
                                             return (
-                                                <Grid item xs={12} key={`fileNo${index}`}>
-                                                    <Grid container>
-                                                        <Grid item xs={10}>
-                                                            <ListItem button onClick={() => getFile(value.File_Path.split('\\').pop().split('/').pop())}>
-                                                                <InsertDriveFileIcon />
-                                                                <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
-                                                            </ListItem>
-                                                        </Grid>
-                                                        <Grid item xs={2}><Button style={{ height: '100%' }} color='secondary' onClick={() => {
-                                                            setModalDeleteFile(true);
-                                                            setDataDelete(value);
+                                                <ListItem
+                                                    key={`folderNo${index}`}
+                                                    disablePadding
+                                                    secondaryAction={
+                                                        <IconButton color='secondary' onClick={() => {
                                                             setEnterFolder(false);
-                                                        }}><DeleteForeverIcon /></Button></Grid>
-                                                    </Grid>
-                                                </Grid>
+                                                            setDataDelete(value);
+                                                            //add delete file in folder function
+                                                            setModalDeleteFile(true);
+                                                        }}>
+                                                            <DeleteForeverIcon />
+                                                        </IconButton >
+                                                    }>
+                                                    <ListItemButton onClick={() => {
+                                                        getFile(value.File_Path.split('\\').pop().split('/').pop())
+                                                    }}>
+                                                        <InsertDriveFileIcon />
+                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
+                                                    </ListItemButton>
+                                                </ListItem>
                                             );
                                         })}
                                         </div>

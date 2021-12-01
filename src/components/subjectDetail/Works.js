@@ -1,4 +1,5 @@
-import { Grid, Button, Typography, List, ListItem, ListItemText, IconButton } from '@material-ui/core';
+import { Grid, Button, Typography, List,  IconButton } from '@material-ui/core';
+import { ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Form, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import * as FilePond from 'react-filepond';
 import 'filepond/dist/filepond.min.css'
 
@@ -172,7 +174,6 @@ export default function Works(props) {
                     :
                     <Typography style={{width:'100%',display:'flex',justifyContent:'center'}}>เลือกวิชาที่จะแสดง</Typography>
                 }
-                <br/>
                 {selectSubject && works.length === 0 ? 
                 <div style={{display:'flex',justifyContent:'center'}}>
                     <Typography>ยังไม่มีงานตอนนี้</Typography>
@@ -181,28 +182,26 @@ export default function Works(props) {
                 <List>
                     {works.map((value,index) => {
                         return(
-                            <Grid key={index} container justifyContent="center">
-                                <Grid item xs={10}>
-                                    <ListItem button onClick={() => {
-                                        setSelectWork(value);
-                                        setTeacherWorkModal(true);
-                                    }}>
-                                        <ListItemText key={index} primary={value.Work_Name} />
-                                    </ListItem>
-                                </Grid>
-                                <Grid item xs={2}>
-                                    <Button
-                                        style={{ height: '100%' }}
-                                        color="secondary"
-                                        onClick={() => {
-                                            setDeleteWork(value);
-                                            setDeleteModal(true)
-                                        }}
-                                        >
-                                        <DeleteForeverIcon color="secondary" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
+                            <ListItem
+                            key={`workNO${index}`}
+                            disablePadding
+                            secondaryAction={
+                                <IconButton
+                                color="secondary"
+                                onClick={() => {
+                                    setDeleteWork(value);
+                                    setDeleteModal(true)
+                                }}>
+                                    <DeleteForeverIcon color="secondary" />
+                                </IconButton>
+                            }>
+                                <ListItemButton onClick={() => {
+                                    setSelectWork(value);
+                                    setTeacherWorkModal(true);
+                                }}>
+                                    <ListItemText primary={value.Work_Name} />
+                                </ListItemButton>
+                            </ListItem>
                         )
                     })}
                 </List>
@@ -478,8 +477,8 @@ export default function Works(props) {
                                                     {new Date(value.Submit_date) < new Date(selectWork.End) &&
                                                         <Button onClick={async() => {
                                                             // console.log(value);
-                                                            localStorage.setItem('studentSubmittedWork',JSON.stringify(value))
-                                                            window.open('/class','_blank');
+                                                            localStorage.setItem('studentSubmittedWork', JSON.stringify({ student: value, work: selectWork }))
+                                                            window.open('/studentWork','_blank');
                                                         }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width:'100%' }}>
                                                             <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
                                                             <b style={{ color: 'green' }}>ส่งตามเวลา</b>
@@ -488,8 +487,8 @@ export default function Works(props) {
                                                     {new Date(value.Submit_date) > new Date(selectWork.End) && 
                                                         <Button onClick={async() => {
                                                             // console.log(value);
-                                                            localStorage.setItem('studentSubmittedWork', JSON.stringify(value))
-                                                            window.open('/class', '_blank');
+                                                            localStorage.setItem('studentSubmittedWork', JSON.stringify({student: value, work: selectWork}))
+                                                            window.open('/studentWork', '_blank');
                                                         }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width:'100%' }}>
                                                             <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
                                                             <b style={{ color: 'red' }}>ส่งช้า</b>
@@ -598,16 +597,13 @@ export default function Works(props) {
                         <List>
                             {works.map((value, index) => {
                                 return (
-                                    <Grid key={index} container justifyContent="center" direction='column'>
-                                        <Grid item xs={12}>
-                                            <ListItem button onClick={async() => {
-                                                await setSelectWork(value);
-                                                await setStudentOpenWork(true);
-                                            }}>
-                                                <ListItemText key={index} primary={value.Work_Name} />
-                                            </ListItem>
-                                        </Grid>
-                                    </Grid>
+                                    <ListItem key={`workNO${index}`} button onClick={() => {
+                                        setSelectWork(value);
+                                        setStudentOpenWork(true);
+                                    }}>
+                                        <ListItemIcon style={{ color:'#9F2B68'}}><DriveFileRenameOutlineIcon/></ListItemIcon>
+                                        <ListItemText primary={value.Work_Name} />
+                                    </ListItem>
                                 )
                             })}
                         </List>

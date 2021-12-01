@@ -1,8 +1,8 @@
 import react from 'react';
 import * as FilePond from 'react-filepond';
 import axios from 'axios';
-import { Grid, ListItem, ListItemText, List } from '@material-ui/core';
-import {Button,Tabs,Tab, Typography} from '@mui/material';
+import { Grid, List, IconButton } from '@material-ui/core';
+import { Button, Tabs, Tab, Typography, ListItem, ListItemButton, ListItemText, ListItemIcon } from '@mui/material';
 import { Form, Modal } from 'react-bootstrap';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 import AddIcon from '@mui/icons-material/Add';
@@ -100,60 +100,63 @@ export default function Clip(props) {
                     props.user.Teacher_id ? 
                         <Grid container justifyContent="center">
                             <Button variant='text' style={{ width: '100%', color: '#4377ED' }} onClick={() => {setUploadClip(true)}}>อัพโหลดคลิป</Button>
-                            <br/>
                             {clipFolders.length === 0 && clipsInNoFolder.length === 0 ?
                             <Typography>ว่างเปล่า</Typography>
                             :
                             <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                <List style={{ width: '90%' }}>
+                                <List style={{ width: '100%' }}>
                                     {clipsInNoFolder.length !== 0 && clipsInNoFolder.map((value,index) => {
                                         return(
-                                            <Grid key={`clipNo${index}`} container direction='row'>
-                                                <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <ListItem button onClick={() => {
-                                                        setVideoModal(true)
-                                                        setVideoPath(value.File_Path)
-                                                        setSelectVideo(value.Clip_Name)
-                                                    }}>
-                                                        <div style={{color:'green'}}><PlayCircleOutlineIcon /></div>
-                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
-                                                    </ListItem>
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                    <Button style={{ height: '100%' }} color='error' onClick={() => {
+                                            <ListItem
+                                                key={`clipNo${index}`}
+                                                disablePadding
+                                                secondaryAction={
+                                                    <IconButton color='secondary' onClick={() => {
                                                         setDeleteClipModal(true);
                                                         setDeleteData(value.File_Path);
                                                         setDeleteClipName(value.Clip_Name)
                                                         setDeleteClipId(value.File_Clip_id)
-                                                    }}><DeleteForeverIcon /></Button>
-                                                </Grid>
-                                            </Grid>
+                                                    }}>
+                                                        <DeleteForeverIcon />
+                                                    </IconButton >
+                                                }>
+                                                <ListItemButton onClick={() => {
+                                                    setVideoModal(true)
+                                                    setVideoPath(value.File_Path)
+                                                    setSelectVideo(value.Clip_Name)
+                                                }}>
+                                                    <ListItemIcon style={{ color:'#008000'}}><PlayCircleOutlineIcon /></ListItemIcon>
+                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
+                                                </ListItemButton>
+                                            </ListItem>
                                         );
                                     })}
                                     {clipFolders.length !== 0 && clipFolders.map((value,index) => {
                                         return(
-                                            <Grid key={`clipFolderNo${index}`} container direction='row'>
-                                                <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <ListItem button onClick={() => {
-                                                        api.post('subject/enterClipFolder',{
-                                                            path : value
-                                                        })
+                                            <ListItem
+                                                key={`clipFolderNo${index}`}
+                                                disablePadding
+                                                secondaryAction={
+                                                    <IconButton color='secondary' onClick={() => {
+                                                        setDeleteFolderModal(true);
+                                                        setDeleteData(value);
+                                                    }}>
+                                                        <DeleteForeverIcon />
+                                                    </IconButton >
+                                                }>
+                                                <ListItemButton onClick={() => {
+                                                    api.post('subject/enterClipFolder', {
+                                                        path: value
+                                                    })
                                                         .then(res => setClipInSelectFolder(res.data))
                                                         .then(setSelectClipFolder(value.split('/').at(-1)))
                                                         .catch(err => console.log(err))
-                                                        setClipFolderModal(true)
-                                                    }}>
-                                                        <div style={{ color: 'gray' }}><FolderIcon /></div>
-                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
-                                                    </ListItem>
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                    <Button style={{ height: '100%' }} color='error' onClick={() => {
-                                                        setDeleteFolderModal(true);
-                                                        setDeleteData(value);
-                                                    }}><DeleteForeverIcon /></Button>
-                                                </Grid>
-                                            </Grid>
+                                                    setClipFolderModal(true)
+                                                }}>
+                                                    <ListItemIcon><FolderIcon /></ListItemIcon>
+                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
+                                                </ListItemButton>
+                                            </ListItem>
                                         );
                                     })}
                                 </List>
@@ -402,30 +405,32 @@ export default function Clip(props) {
                                             {clipInSelectFolder.length === 0 ?
                                                 <Typography>ว่างเปล่า</Typography>
                                             :
-                                                <List style={{ width: '90%' }}>
+                                                <List style={{ width: '100%' }}>
                                                     {clipInSelectFolder.map((value, index) => {
                                                         return (
-                                                            <Grid key={`clipNo${index}`} container direction='row'>
-                                                                <Grid item xs={10} style={{ display: 'flex', flexDirection: 'row' }}>
-                                                                    <ListItem button onClick={() => {
-                                                                        setVideoModal(true)
-                                                                        setVideoPath(value.File_Path)
-                                                                        setSelectVideo(value.Clip_Name)
-                                                                    }}>
-                                                                        <div style={{ color: 'green' }}><PlayCircleOutlineIcon /></div>
-                                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
-                                                                    </ListItem>
-                                                                </Grid>
-                                                                <Grid item xs={2}>
-                                                                    <Button style={{ height: '100%' }} color='error' onClick={() => {
+                                                            <ListItem
+                                                                key={`clipNo${index}`}
+                                                                disablePadding
+                                                                secondaryAction={
+                                                                    <IconButton color='secondary' onClick={() => {
                                                                         setDeleteClipInFolderModal(true);
                                                                         setClipFolderModal(false);
                                                                         setDeleteData(value.File_Path);
                                                                         setDeleteClipName(value.Clip_Name);
                                                                         setDeleteClipId(value.File_Clip_id);
-                                                                    }}><DeleteForeverIcon /></Button>
-                                                                </Grid>
-                                                            </Grid>
+                                                                    }}>
+                                                                        <DeleteForeverIcon />
+                                                                    </IconButton >
+                                                                }>
+                                                                <ListItemButton onClick={() => {
+                                                                    setVideoModal(true)
+                                                                    setVideoPath(value.File_Path)
+                                                                    setSelectVideo(value.Clip_Name)
+                                                                }}>
+                                                                    <ListItemIcon style={{ color: '#008000' }}><PlayCircleOutlineIcon /></ListItemIcon>
+                                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
+                                                                </ListItemButton>
+                                                            </ListItem>
                                                         );
                                                     })}
                                                 </List>
