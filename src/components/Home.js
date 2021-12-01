@@ -1,6 +1,6 @@
 import react from 'react';
 import { userContext } from '../userContext';
-import { Grid, makeStyles, Paper, Typography, Button, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
+import { Grid, makeStyles, Paper, Typography, Button, ListItem, ListItemText, List, ListItemIcon, InputBase } from '@material-ui/core';
 import axios from 'axios';
 import SubjectList from './SubjectList'
 import DaySub from './TimetableComponent/DaySub';
@@ -15,8 +15,11 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { IconButton } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
     paperRight: {
@@ -69,7 +72,8 @@ export default function Home(props,{ forwardedRef }) {
 
     const [selectStudent, setSelectStudent] = react.useState(null);
 
-    const [searchStudent, setSearchStudent] = react.useState('');
+    const [searchStudent, setSearchStudent] = react.useState([]);
+    const [searchString, setSearchString] = react.useState('');
 
     react.useEffect(() => {
         if(selectSubject){
@@ -347,7 +351,8 @@ export default function Home(props,{ forwardedRef }) {
                 <Modal show={openStudentList} size="lg" aria-labelledby="contained-modal-title-vcenter" centered onHide={() => {
                     setOpenStudentList(false);
                     setSelectStudent(null);
-                    setSearchStudent('');
+                    setSearchStudent([]);
+                    setSearchString('');
                 }}>
                     <Modal.Header closeButton>{selectSubject ? `รายชื่อนักเรียน ห้อง${roomllStudents}` : 'กรุณาเลือกวิชาก่อน'}</Modal.Header>
                     {selectSubject && 
@@ -359,36 +364,70 @@ export default function Home(props,{ forwardedRef }) {
                                         :
                                         <Grid container direction='column'>
                                             <Grid item xs={12}>
-                                                <input type='text' onChange={(e) => setSearchStudent(e.target.value)} placeholder='ค้นหานักเรียน' style={{ width: '100%', borderRadius: '6px', backgroundColor:'#ECECEC',border:'none',padding:'0.5rem',MozUserFocus:'none'}}/>
+                                                <Paper component="form" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', backgroundColor: '#ffffff' }}>
+                                                    <SearchIcon/>
+                                                    <InputBase
+                                                        style={{ flex: 1, width:'100%' }}
+                                                        placeholder=" ค้นหานักเรียน"
+                                                        inputProps={{ 'aria-label': ' ค้นหานักเรียน' }}
+                                                        value={searchString}
+                                                        onChange={(event) => {
+                                                            setSearchString(event.target.value)
+                                                            var listResult = allStudents.filter(element => {
+                                                                const regex = new RegExp(`^${event.target.value}`, 'gi');
+                                                                return element.Student_id.match(regex) || element.Student_FirstName.match(regex) || element.Student_LastName.match(regex)
+                                                            })
+
+                                                            if(event.target.value.length === 0){
+                                                                setSearchStudent([]);
+                                                            }
+                                                            else{
+                                                                if(listResult.length === 0){
+                                                                    setSearchStudent([]);
+                                                                }
+                                                                else{
+                                                                    setSearchStudent(listResult)
+                                                                }
+                                                            }
+                                                        }}
+                                                    />
+                                                    {searchString.length !== 0 &&
+                                                    <IconButton style={{width:'2rem',height:'2rem'}} onClick={() => {
+                                                        setSearchString('');
+                                                        setSearchStudent([]);
+                                                    }} color='error'>
+                                                        <ClearIcon />
+                                                    </IconButton>
+                                                    }
+                                                </Paper>
                                                 {searchStudent.length !== 0 &&
                                                 <Grid container direction='column' style={{zIndex:'100',position:'absolute'}}>
                                                     <Grid item xs={12}>
                                                         <Paper style={{width:'48%',marginTop:'0.5rem',maxHeight:'32vh',overflow:'scroll'}}>
                                                             <div style={{padding:'0.5rem'}}>
                                                                 <List>
-                                                                    {allStudents.filter(e => {
-                                                                        const regex = new RegExp(`^${searchStudent}`,'gi');
-                                                                        return e.Student_id.match(regex) || e.Student_FirstName.match(regex) || e.Student_LastName.match(regex)
-                                                                    }).map((value, index) => {
-                                                                        return (
-                                                                            <ListItem button onClick={() => {
-                                                                                api.post('/teacher/studentParent', {
-                                                                                    Student_id: value.Student_id
-                                                                                })
-                                                                                    .then(res => {
-                                                                                        setSelectStudent({
-                                                                                            student: value,
-                                                                                            parent: res.data[0]
-                                                                                        })
-                                                                                        setSearchStudent('')
+                                                                    {searchStudent.length !== 0 &&
+                                                                        searchStudent.map((value, index) => {
+                                                                            return (
+                                                                                <ListItem button onClick={() => {
+                                                                                    api.post('/teacher/studentParent', {
+                                                                                        Student_id: value.Student_id
                                                                                     })
-                                                                                    .catch(err => console.log(err))
-                                                                            }} key={`searchResultNO${index}`}>
-                                                                                <ListItemIcon><AccountCircleIcon sx={{ fontSize: 40 }} /></ListItemIcon>
-                                                                                <ListItemText primary={value.Student_id} secondary={`${value.Student_FirstName} ${value.Student_LastName}`} />
-                                                                            </ListItem>
-                                                                        );
-                                                                    })}
+                                                                                        .then(res => {
+                                                                                            setSelectStudent({
+                                                                                                student: value,
+                                                                                                parent: res.data[0]
+                                                                                            })
+                                                                                            setSearchStudent('')
+                                                                                        })
+                                                                                        .catch(err => console.log(err))
+                                                                                }} key={`searchResultNO${index}`}>
+                                                                                    <ListItemIcon><AccountCircleIcon sx={{ fontSize: 40 }} /></ListItemIcon>
+                                                                                    <ListItemText primary={value.Student_id} secondary={`${value.Student_FirstName} ${value.Student_LastName}`} />
+                                                                                </ListItem>
+                                                                            );
+                                                                        })
+                                                                    }
                                                                 </List>
                                                             </div>
                                                         </Paper>    
@@ -428,8 +467,8 @@ export default function Home(props,{ forwardedRef }) {
                                         {selectStudent ?
                                         <div style={{ paddingLeft: '1rem', overflow: 'scroll', maxHeight: '65vh',width:'100%'}}>
                                             <Grid container justifyContent='center' direction='row'>
-                                                <Grid item xs={4}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
-                                                <Grid item xs={8}>
+                                                <Grid item xs={3}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
+                                                <Grid item xs={9}>
                                                     <Grid container justifyContent='flex-start' direction='column'>
                                                         <Grid item xs={12}><Typography>{selectStudent.student.Student_id}</Typography></Grid>
                                                         <Grid item xs={12}><Typography>{`${selectStudent.student.Student_FirstName} ${selectStudent.student.Student_LastName}`}</Typography></Grid>
@@ -474,8 +513,8 @@ export default function Home(props,{ forwardedRef }) {
                                             <br/>
                                             <br/>
                                             <Grid container justifyContent='center' direction='row'>
-                                                <Grid item xs={4}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
-                                                <Grid item xs={8}>
+                                                <Grid item xs={3}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
+                                                <Grid item xs={9}>
                                                     <Grid container justifyContent='flex-start' direction='column'>
                                                         <Grid item xs={12}><Typography>{`${selectStudent.parent.Parent_FirstName} ${selectStudent.parent.Parent_LastName}`}</Typography></Grid>
                                                     </Grid>
