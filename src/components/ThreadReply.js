@@ -4,9 +4,11 @@ import axios from 'axios';
 import {selectImgBlobReply} from './selectImgBlobReply';
 
 var b64toBlob = require('b64-to-blob');
+require('dotenv').config()
 
 export default function ThreadReply(props){
-    const api = axios.create({ baseURL: 'http://localhost:3001/' })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
     const [readMore, setReadMore] = react.useState(false);
     const [replyImg, setReplyImg] = react.useState([]);
 
@@ -38,6 +40,20 @@ export default function ThreadReply(props){
     }
 
     react.useEffect(() => {
+        var imgBlob = [];
+        if(props.b64){
+            props.b64.map(v => {
+                var blob = b64toBlob(v, "image/*");
+                var blobUrl = URL.createObjectURL(blob);
+                imgBlob.push(blobUrl)
+
+                return null;
+            })
+        setReplyImg(imgBlob)
+        }
+    },[])
+
+    react.useEffect(() => {
         if(props.img){
             imgAns(props.img)
         }
@@ -48,7 +64,6 @@ export default function ThreadReply(props){
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Typography style={{ paddingTop: '4px', paddingLeft: '8px', color: '#afafaf' }}>{props.user}</Typography>
                 <div style={{ display: 'flex', flexDirection: 'row', paddingTop: '4px', paddingRight: '8px', color: '#afafaf' }}>
-                    <Typography style={{ paddingRight: '0.5rem' }}>{props.date === 'วันนี้' ? props.date : `${props.date?.split('-')[2]}/${props.date?.split('-')[1]}/${props.date?.split('-')[0]}`}</Typography>
                     <Typography>{props.time}</Typography>
                 </div>
             </div>

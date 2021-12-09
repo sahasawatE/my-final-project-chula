@@ -18,9 +18,11 @@ import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import axios from 'axios';
 import { selectSubjectContext } from './selectSubjectContext';
+require('dotenv').config()
 
 export default function Appbar() {
-    const api = axios.create({ baseURL: 'http://localhost:3001/'})
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok})
     const { user } = react.useContext(userContext);
     const [anchorEl, setAnchorEl] = react.useState(null);
     const [anchorElNoti, setAnchorElNoti] = react.useState(null);

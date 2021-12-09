@@ -1,6 +1,7 @@
 import {Grid,Button, Typography, IconButton} from '@material-ui/core';
 import react from 'react';
 import axios from 'axios';
+import socketIOClient from 'socket.io-client';
 import { selectSubjectContext } from './selectSubjectContext';
 import { userContext } from '../userContext';
 import { selectImgBlobReply } from './selectImgBlobReply';
@@ -20,8 +21,13 @@ import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orien
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 
 var b64toBlob = require('b64-to-blob');
+require('dotenv').config();
+const socket = socketIOClient(process.env.REACT_APP_NGROK_URL, {
+    // query: localStorage.getItem('auth-token')
+    query: `token=${localStorage.getItem('auth-token')}`
+});
 
-export default function Teacher() {
+export default function Thread() {
     FilePond.registerPlugin(
         FilePondPluginFileValidateType,
         FilePondPluginFileValidateSize,
@@ -50,7 +56,8 @@ export default function Teacher() {
 
     const today = `${d.getFullYear()}-${m}-${day}`
 
-    const api = axios.create({ baseURL: 'http://localhost:3001/'})
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
 
     const {selectSubject} = react.useContext(selectSubjectContext);
     const {user} = react.useContext(userContext);
@@ -66,6 +73,7 @@ export default function Teacher() {
     const [imgBlob, setImgBlob] = react.useState([]);
     const [mode, setMode] = react.useState(0);
     const [selectImgReply, setSelectImgReply] = react.useState(null);
+    const [replyMsg, setReplyMsg] = react.useState([]);
 
     function threadPost(id){
         if(user.Student_id){
@@ -105,8 +113,30 @@ export default function Teacher() {
         setImgBlob([]);
     }
 
+    function sendMsg(a, student, teacher, subject, thread, room) {
+        socket?.emit('sent-message', {
+            user: student ? student : teacher,
+            subject: subject,
+            thread: thread,
+            room: room,
+            msg: a
+        })
+    }
+
+    function sendMsgAndImg(f,a,student,teacher,subject,thread,room) {
+        socket?.emit('sent-message-image', {
+            user: student ? student : teacher,
+            subject: subject,
+            thread: thread,
+            room: room,
+            file: f,
+            msg: a
+        })
+    }
+
     function ansTheard(a){
         if(user.Student_id){
+            sendMsg(a, user.Student_id, null, threadData.Subject_id, threadData.Thread_id, threadData.Room_id)
             api.post('/subject/ReplyThread',{
                 Student_id: user.Student_id,
                 Teacher_id : null,
@@ -118,7 +148,8 @@ export default function Teacher() {
             .then(res => setA(res.data))
             .catch(err => console.log(err))    
         }
-        else if(user.Teacher_id){
+        else if (user.Teacher_id) {
+            sendMsg(a, null, user.Teacher_id, threadData.Subject_id, threadData.Thread_id, threadData.Room_id)
             api.post('/subject/ReplyThread', {
                 Student_id: null,
                 Teacher_id: user.Teacher_id,
@@ -138,6 +169,12 @@ export default function Teacher() {
     }
 
     function ansTreadImg(fileList,ans){
+        if(user.Teacher_id){
+            sendMsgAndImg(fileList, ans,null,user.Teacher_id,threadData.Subject_id,threadData.Thread_id,threadData.Room_id)
+        }
+        else{
+            sendMsgAndImg(fileList, ans, user.Student_id, null, threadData.Subject_id, threadData.Thread_id, threadData.Room_id)
+        }
         api.post('/subject/postThreadImg',{
             file: fileList,
             ans: ans
@@ -163,16 +200,48 @@ export default function Teacher() {
             api.post('/subject/Threads',{
                 Subject_id : selectSubject.name,
                 Room_id : selectSubject.room,
-            }).then(res => {
-                setThread(res.data[0]);
-                setReply(res.data[1]);
+            }).then(res1 => {
+                setThread(res1.data[0]);
+                setReply(res1.data[1]);
+                // console.log(res.data[1][0])
                 setAnswer('');
                 setA('');
             })
-            .then(commentSection.current?.scroll({ top: commentSection.current.scrollHeight, behavior: 'smooth' }))
             .catch(err => console.log(err))
         }
-    },[res,selectSubject,a])
+    },[res,selectSubject]);
+
+    react.useEffect(() => {
+        socket.on('new-message', (messageNew) => {
+            setReplyMsg((list) => [...list, {
+                Detail: messageNew.msg,
+                Example_file: "",
+                Reply_to: messageNew.thread,
+                Student_id: messageNew.user[0] === "t" ? "" : messageNew.user,
+                Teacher_id: messageNew.user[0] === "t" ? messageNew.user : "",
+                Thread_id: "",
+                Title: ""
+            }])
+        })
+        socket.on('new-message-image',(messageData) => {
+            setReplyMsg((list) => [...list, {
+                Detail: messageData.msg,
+                Example_file: "",
+                Reply_to: messageData.thread,
+                Student_id: messageData.user[0] === "t" ? "" : messageData.user,
+                Teacher_id: messageData.user[0] === "t" ? messageData.user : "",
+                Thread_id: "",
+                Title: "",
+                b64file: messageData.fileData
+            }])
+        })
+    }, [socket])
+
+    react.useEffect(() => {
+        setAnswer('');
+        setA('');
+        commentSection.current?.scroll({ top: commentSection.current.scrollHeight, behavior: 'smooth' });
+    },[a]);
 
     react.useEffect(() => {
         if (threadDataImg !== false){
@@ -203,8 +272,6 @@ export default function Teacher() {
 
     const [threadDate, setThreadDate] = react.useState(null);
     const [threadtime, setThreadTime] = react.useState(null);
-    const [replyDate, setReplyDate] = react.useState([]);
-    const [replyTime, setreplyTime] = react.useState([]);
     const [selectThreadImg, setSelectThreadImg] = react.useState(null);
 
     const [readMore, setReadMore] = react.useState(false);
@@ -220,17 +287,6 @@ export default function Teacher() {
 
             setThreadDate(date);
             setThreadTime(time);
-        }
-        if(reply){
-            let date = [];
-            let time = [];
-            reply.map(value => {
-                date.push(value.Time.split(' ')[0]);
-                time.push(value.Time.split(' ')[1].split('.')[0]);
-                return null;
-            })
-            setReplyDate(date);
-            setreplyTime(time);
         }
         setTimeout(() => {
             commentSection.current?.scroll({ top: commentSection.current.scrollHeight, behavior: 'smooth' });
@@ -407,13 +463,13 @@ export default function Teacher() {
                                 <Grid item xs={6} style ={{width:'50%'}}>
                                     <Typography>คำตอบ</Typography>
                                     <div style={{maxHeight:'36vh', overflow:'scroll'}} ref={commentSection}>
-                                    {reply ? 
-                                    reply.map((value,index) => {
-                                        if(value.Reply_to === String(threadData.Thread_id)){
+                                    {reply || replyMsg ? 
+                                    reply.concat(replyMsg).map((value,index) => {
+                                        if(String(value.Reply_to) === String(threadData.Thread_id)){
                                             return(
                                                 <selectImgBlobReply.Provider value={{ setSelectImgReply, setShowThread }} key={`replyNo${index}`}>
                                                     <div style={{ display: 'flex', justifyContent: 'flex-start', backgroundColor: '#f3f3f3', margin: '0.5rem 0 0 0', borderRadius: '4px', flexDirection: 'column' }}>
-                                                        <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} date={replyDate[index] === today ? 'วันนี้' : replyDate[index]} time={replyTime[index]} content={value.Detail} img={value.Example_file} />
+                                                        <ThreadReply user={value.Student_id ? value.Student_id : value.Teacher_id} content={value.Detail} img={value.Example_file} b64={value.b64file ? value.b64file : null} />
                                                     </div>
                                                 </selectImgBlobReply.Provider>
                                             )
@@ -589,7 +645,7 @@ export default function Teacher() {
                                 }}
                                 server={
                                     selectSubject && user ? {
-                                        process: `http://localhost:3001/subject/fileThread/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}`,
+                                        process: `${ngrok}/subject/fileThread/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}`,
                                         revert: null
                                     }
                                     :

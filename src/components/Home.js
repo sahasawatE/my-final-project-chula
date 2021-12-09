@@ -7,6 +7,7 @@ import DaySub from './TimetableComponent/DaySub';
 import SubjectDocs from './subjectDetail/SubjectDocs';
 import {subjectContext} from './subjectContext';
 import Thread from './Thread';
+// import Hok from './Hok';
 import { selectSubjectContext } from './selectSubjectContext';
 import PersonIcon from '@material-ui/icons/Person';
 import Link from '@mui/material/Link';
@@ -52,11 +53,11 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(2)
     },
 }));
+require('dotenv').config()
 
 export default function Home(props,{ forwardedRef }) {
-    const api = axios.create({
-        baseURL:'http://localhost:3001/'
-    })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
     const { user } = react.useContext(userContext);
     const {selectSubject,setSelectSubject} = react.useContext(selectSubjectContext);
     const classes = useStyles();
@@ -340,6 +341,7 @@ export default function Home(props,{ forwardedRef }) {
                         <Paper>
                             <Grid container justifyContent="center" direction="column">
                                 <Thread/>
+                                {/* <Hok/> */}
                             </Grid>
                         </Paper>
                     </div>

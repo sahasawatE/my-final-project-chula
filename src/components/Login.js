@@ -5,11 +5,11 @@ import axios from "axios";
 import '../App.css'
 import {AccountCircle} from '@material-ui/icons';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
+require('dotenv').config()
 
 export default function Login(){
-    const api = axios.create({
-        baseURL: 'http://localhost:3001/',
-    }); 
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
 
     const userInputRef = react.useRef(null);
 

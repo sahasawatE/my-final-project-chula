@@ -2,12 +2,12 @@ import react from 'react';
 import axios from 'axios';
 import { List, ListItem } from '@mui/material';
 import SubjectListItem from './SubjectListItem';
+require('dotenv').config()
 
 export default function SubjectList(props) {
 
-    const api = axios.create({
-        baseURL: 'http://localhost:3001/'
-    })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
 
     const [subjects, setSubjects] = react.useState([]);
     const [user, setUser] = react.useState('Teacher');
