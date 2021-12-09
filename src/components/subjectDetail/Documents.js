@@ -18,14 +18,14 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import StudentDocument from './StudentDocument';
 
 var b64toBlob = require('b64-to-blob');
+require('dotenv').config()
 
 //make a query and get subkect from localstorage
 export default function Documents(props){
     const [dir,setDir] = react.useState('');
     FilePond.registerPlugin(FilePondPluginFileValidateType)
-    const api = axios.create({
-        baseURL: 'http://localhost:3001/'
-    })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
 
     const subject = props.subject;
 
@@ -84,8 +84,22 @@ export default function Documents(props){
                 Room_id: props.subject.Room_id
             }
         })
-            .then(h = noFolderFiles.filter(v => v !== f))
-            .then(setNoFolderFiles(h))
+            .then(() => {
+                if (selectFolder.length !== 0) {
+                    h = filesInFolder.filter(v => v !== f)
+                }
+                else{
+                    h = noFolderFiles.filter(v => v !== f)
+                }
+            })
+            .then(() => {
+                if(selectFolder.length !== 0){
+                    setFilesInFolder(h)
+                }
+                else{
+                    setNoFolderFiles(h)
+                }
+            })
             .then(() => {
                 setModalDeleteFile(false);
                 if(selectFolder.length !== 0){
@@ -298,7 +312,7 @@ export default function Documents(props){
                                                     allowRevert
                                                     // allowRemove={false}
                                                     server={props.subject && {
-                                                        process: `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
+                                                        process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
                                                         revert: null
                                                     }}
                                                     name="file"
@@ -350,7 +364,7 @@ export default function Documents(props){
                                             allowDrop
                                             // allowRemove={false}
                                             server={props.subject && {
-                                                process: `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
+                                                process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
                                                 revert: null
                                             }}
                                             name="file"
@@ -486,7 +500,7 @@ export default function Documents(props){
                                             allowDrop
                                             allowRevert
                                             server={props.subject && {
-                                                process: `http://localhost:3001/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
+                                                process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
                                                 revert: null
                                             }}
                                             name="file"
@@ -554,7 +568,6 @@ export default function Documents(props){
                                                         <IconButton color='secondary' onClick={() => {
                                                             setEnterFolder(false);
                                                             setDataDelete(value);
-                                                            //add delete file in folder function
                                                             setModalDeleteFile(true);
                                                         }}>
                                                             <DeleteForeverIcon />

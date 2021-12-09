@@ -11,19 +11,21 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import * as FilePond from 'react-filepond';
 import 'filepond/dist/filepond.min.css'
 
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
 var b64toBlob = require('b64-to-blob');
+require('dotenv').config()
 
 export default function Works(props) {
     const today = new Date();
     FilePond.registerPlugin(FilePondPluginFileValidateType)
-    const api = axios.create({
-        baseURL: 'http://localhost:3001/'
-    })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
     const user = props.user
     const {selectSubject} = react.useContext(selectSubjectContext);
 
@@ -132,6 +134,13 @@ export default function Works(props) {
         const [teacherWorkFiles, setTeacherWorkFiles] = react.useState([]);
         const [viewWorkSubmit, setViewWorkSubmit] = react.useState(false);
         const [submittedStudent,setSubmittedStudent] = react.useState([]);
+        const [teacherSelectImg, setTeacherSelectImg] = react.useState(null);
+
+        const [hideWorkModal, setHideWorkModal] = react.useState(false);
+        const [hideWork ,setHideWork] = react.useState(null);
+        const [unHideWorkModal, setUnHideWorkModal] = react.useState(false);
+        const [unHideWork, setUnHideWork] = react.useState(null);
+
         function teacherClickWorkFile(pathFile, type) {
             api.post('/subject/file', {
                 path: pathFile,
@@ -145,7 +154,8 @@ export default function Works(props) {
                 else if (type === 'image') {
                     blob = b64toBlob(result.data, "image/*")
                     blobUrl = URL.createObjectURL(blob);
-                    window.open(blobUrl, '_blank');
+                    setTeacherSelectImg(blobUrl);
+                    setTeacherWorkModal(false);
                 }
             }).catch(err => console.log(err))
         }
@@ -186,26 +196,96 @@ export default function Works(props) {
                             key={`workNO${index}`}
                             disablePadding
                             secondaryAction={
-                                <IconButton
-                                color="secondary"
-                                onClick={() => {
-                                    setDeleteWork(value);
-                                    setDeleteModal(true)
-                                }}>
-                                    <DeleteForeverIcon color="secondary" />
-                                </IconButton>
+                                <div>
+                                    {value.Work_Status === 'close' ? 
+                                    <IconButton
+                                        onClick={() => {
+                                            setUnHideWork(value);
+                                            setUnHideWorkModal(true);
+                                        }}>
+                                        <VisibilityIcon />
+                                    </IconButton>
+                                    :
+                                    <IconButton
+                                        onClick={() => {
+                                            setHideWork(value);
+                                            setHideWorkModal(true);
+                                        }}>
+                                        <VisibilityOffIcon />
+                                    </IconButton>
+                                    }
+                                    <IconButton
+                                        color="secondary"
+                                        onClick={() => {
+                                            setDeleteWork(value);
+                                            setDeleteModal(true);
+                                        }}>
+                                        <DeleteForeverIcon color="secondary" />
+                                    </IconButton>
+                                </div>
                             }>
                                 <ListItemButton onClick={() => {
                                     setSelectWork(value);
                                     setTeacherWorkModal(true);
                                 }}>
-                                    <ListItemText primary={value.Work_Name} />
+                                    <ListItemIcon style={value.Work_Status === 'open' ? { color: '#9F2B68' } : { color:'#8a8a8a' }}><DriveFileRenameOutlineIcon /></ListItemIcon>
+                                    <ListItemText primary={<Typography style={value.Work_Status === 'open' ? null : { color: '#8a8a8a' }}>{value.Work_Name}</Typography>} />
                                 </ListItemButton>
                             </ListItem>
                         )
                     })}
                 </List>
                 }
+
+                {/* hideModal */}
+                <div>
+                    <Modal centered backdrop="static" show={hideWorkModal}>
+                        <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
+                            คุณต้องการที่จะปิดการมองเห็นเนื้อหานี้หรือไม่ ?
+                        </Modal.Body>
+                        <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
+                            <Button variant="outlined" onClick={() => setHideWorkModal(false)}>ยกเลิก</Button>
+                            <Button variant="outlined" color="secondary" onClick={() => {
+                                api.post('/teacher/hideWork',{
+                                    work: hideWork
+                                })
+                                .then(res => {
+                                    if (res.data === 'updated'){
+                                        setHideWorkModal(false);
+                                        setHideWork(null);
+                                        getAllWork()
+                                    }
+                                })
+                                .catch(err => console.log(err))
+                            }}>ปิดการมองเห็น</Button>
+                        </Modal.Footer>
+                    </Modal>
+                </div>  
+
+                {/* un-hideModal */}
+                <div>
+                    <Modal centered backdrop="static" show={unHideWorkModal}>
+                        <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
+                            คุณต้องการที่จะเปิดการมองเห็นเนื้อหานี้หรือไม่ ?
+                        </Modal.Body>
+                        <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
+                            <Button variant="outlined" color="secondary" onClick={() => setUnHideWorkModal(false)}>ยกเลิก</Button>
+                            <Button variant="outlined" color="primary" onClick={() => {
+                                api.post('/teacher/showWork', {
+                                    work: unHideWork
+                                })
+                                    .then(res => {
+                                        if (res.data === 'updated') {
+                                            setUnHideWorkModal(false);
+                                            setUnHideWork(null);
+                                            getAllWork()
+                                        }
+                                    })
+                                    .catch(err => console.log(err))
+                            }}>เปิดการมองเห็น</Button>
+                        </Modal.Footer>
+                    </Modal>
+                </div>  
 
                 {/*create modal */}
                 <div>
@@ -315,7 +395,7 @@ export default function Works(props) {
                                                     }).then(console.log('deleted')).catch(err => console.log(err))
                                                 }}
                                                 server={{
-                                                    process : `http://localhost:3001/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
+                                                    process : `${ngrok}/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
                                                     revert: null
                                                 }}
                                                 labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
@@ -352,6 +432,14 @@ export default function Works(props) {
                         </Modal.Footer>
                     </Modal>
                 </div>
+
+                {/* img modal */}
+                <Modal centered show={teacherSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                    setTeacherSelectImg(null);
+                    setTeacherWorkModal(true);
+                }}>
+                    <img src={teacherSelectImg} alt='teacherSelectImg' />
+                </Modal>
 
                 {/* deleteModal */}
                 <div>
@@ -521,6 +609,7 @@ export default function Works(props) {
         const [isSubmit, setIsSubmit] = react.useState(false);
         const [studentAddFile, setStudentAddFile] = react.useState([]);
         const [hok, setHok] = react.useState([]);
+        const [studentSelectImg, setStudentSelectImg] = react.useState(null);
 
         function studentAllWorks(roomId,subjectId){
             api.post('/subject/studentWorks',{
@@ -542,7 +631,8 @@ export default function Works(props) {
                 else if(type === 'image'){
                     blob = b64toBlob(result.data, "image/*")
                     blobUrl = URL.createObjectURL(blob);
-                    window.open(blobUrl, '_blank');
+                    setStudentSelectImg(blobUrl);
+                    setStudentOpenWork(false);
                 }
             }).catch(err => console.log(err))
         }
@@ -596,15 +686,20 @@ export default function Works(props) {
                         :
                         <List>
                             {works.map((value, index) => {
-                                return (
-                                    <ListItem key={`workNO${index}`} button onClick={() => {
-                                        setSelectWork(value);
-                                        setStudentOpenWork(true);
-                                    }}>
-                                        <ListItemIcon style={{ color:'#9F2B68'}}><DriveFileRenameOutlineIcon/></ListItemIcon>
-                                        <ListItemText primary={value.Work_Name} />
-                                    </ListItem>
-                                )
+                                if(value.Work_Status === 'open'){
+                                    return (
+                                        <ListItem key={`workNO${index}`} button onClick={() => {
+                                            setSelectWork(value);
+                                            setStudentOpenWork(true);
+                                        }}>
+                                            <ListItemIcon style={{ color: '#9F2B68' }}><DriveFileRenameOutlineIcon /></ListItemIcon>
+                                            <ListItemText primary={value.Work_Name} />
+                                        </ListItem>
+                                    )
+                                }
+                                else{
+                                    return null;
+                                }
                             })}
                         </List>
                     }
@@ -681,7 +776,7 @@ export default function Works(props) {
                                             credits={false}
                                             allowRevert
                                             server={{
-                                                process: `http://localhost:3001/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
+                                                process: `${ngrok}/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
                                                 revert: null
                                             }}
                                             onprocessfiles={async () => {
@@ -836,6 +931,14 @@ export default function Works(props) {
                     null
                     }
                 </div>
+
+                {/* img modal */}
+                <Modal centered show={studentSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                    setStudentSelectImg(null);
+                    setStudentOpenWork(true);
+                }}>
+                    <img src={studentSelectImg} alt='teacherSelectImg' />
+                </Modal>
             </div>
         );
     }

@@ -6,11 +6,11 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { Modal } from 'react-bootstrap';
 
 var b64toBlob = require('b64-to-blob');
+require('dotenv').config()
 
 export default function StudentDocument(props){
-    const api = axios.create({
-        baseURL: 'http://localhost:3001/'
-    })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
     const [files, setFiles] = react.useState([]);
     const [folders, setFolders] = react.useState([]);
     const [enterFolder, setEnterFolder] = react.useState(false);

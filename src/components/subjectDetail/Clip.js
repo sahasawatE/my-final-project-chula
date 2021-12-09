@@ -13,11 +13,12 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
 import 'filepond/dist/filepond.min.css';
 
+require('dotenv').config()
+
 export default function Clip(props) {
     FilePond.registerPlugin(FilePondPluginFileValidateType)
-    const api = axios.create({
-        baseURL: 'http://localhost:3001/'
-    })
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    const api = axios.create({ baseURL: ngrok })
 
     const [clips,setClips] = react.useState([]);
     const [clipName, setClipName] = react.useState('');
@@ -278,7 +279,7 @@ export default function Clip(props) {
                                     }
                                 })
                                     .then(() => {
-                                        k = clipsInNoFolder.filter(e => e.Clip_Name !== deleteClipName);
+                                        k = clipInSelectFolder.filter(e => e.Clip_Name !== deleteClipName);
                                         setClipInSelectFolder(k);
                                     })
                                     .then(() => {
@@ -340,7 +341,7 @@ export default function Clip(props) {
                                                             onprocessfilestart={() => setCancelBtn(false)}
                                                             acceptedFileTypes={['video/*']}
                                                             server={props.subject && {
-                                                                process: `http://localhost:3001/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}/${clipName}`,
+                                                                process: `${ngrok}/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}/${clipName}`,
                                                                 revert: null
                                                             }}
                                                             onprocessfiles={async () => {
@@ -478,7 +479,7 @@ export default function Clip(props) {
                     <Modal.Body>
                         {videoPath.length !== 0 && 
                         <video id="videoPlayer" width="100%" controls autoPlay>
-                            <source src={`http://localhost:3001/teacher/video/${videoPath.split('/').at(-2)}/${videoPath.split('/').at(-1)}/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}`} type="video/mp4" />
+                            <source src={`${ngrok}/teacher/video/${videoPath.split('/').at(-2)}/${videoPath.split('/').at(-1)}/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}`} type="video/mp4" />
                         </video>
                         }
                     </Modal.Body>
@@ -543,7 +544,7 @@ export default function Clip(props) {
                                                     }}
                                                     acceptedFileTypes={['video/*']}
                                                     server={{
-                                                        process: `http://localhost:3001/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${newFolderName}/${clipName}`,
+                                                        process: `${ngrok}/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${newFolderName}/${clipName}`,
                                                         revert: null
                                                     }}
                                                     onprocessfiles={async () => {
@@ -616,7 +617,7 @@ export default function Clip(props) {
                                     }}
                                     acceptedFileTypes={['video/*']}
                                     server={{
-                                        process: `http://localhost:3001/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder/${clipName}`,
+                                        process: `${ngrok}/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder/${clipName}`,
                                         revert: null
                                     }}
                                     onprocessfiles={async () => {

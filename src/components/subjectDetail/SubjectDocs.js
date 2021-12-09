@@ -8,9 +8,12 @@ import React from 'react';
 import {Grid} from '@material-ui/core'
 import { userContext } from '../../userContext';
 
+require('dotenv').config()
 // /Users/yen/Desktop/FinalProject/server/Route/uploads/
 
 export default function SubjectDocs(props){
+    const ngrok = process.env.REACT_APP_NGROK_URL;
+    // const api = axios.create({ baseURL: ngrok })
 
     const { user } = React.useContext(userContext);
     // const api = axios.create({
@@ -23,17 +26,14 @@ export default function SubjectDocs(props){
     const [subject,setSubject] = React.useState(null)
     const [roomClass,setRoomClass] = React.useState(null)
 
-    //query docs clips works, which is not subjectDetail
-    //this query is just a test query
-
     React.useEffect(() => {
         if (teacherId && selectedSubject){
-            axios.post('http://localhost:3001/teacher/subject', {
+            axios.post(`${ngrok}teacher/subject`, {
                 Teacher_id: teacherId,
                 Room_id: selectedSubject.room,
                 Subject_id: selectedSubject.name
             }).then(result => {
-                axios.post('http://localhost:3001/student/studentList', {
+                axios.post(`${ngrok}student/studentList`, {
                     Room_id: selectedSubject.room
                 }).then(res => {
                     setSubject(result.data[0])
@@ -42,14 +42,14 @@ export default function SubjectDocs(props){
             }).catch(error => console.log(error))
         }
         if (room && selectedSubject){
-            axios.post('http://localhost:3001/subject/subjectDetail', {
+            axios.post(`${ngrok}/subject/subjectDetail`, {
                 Subject_id: selectedSubject.name,
                 Room_id: room
             }).then(result => {
                 setSubject(result.data[0])
             }).catch(error => console.log(error)) 
         }
-    },[selectedSubject,room,teacherId]);
+    },[selectedSubject,room,teacherId,ngrok]);
 
     return(
         <div>
