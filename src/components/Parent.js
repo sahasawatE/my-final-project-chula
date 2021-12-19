@@ -11,7 +11,7 @@ export default function Parent({forwardedRef}){
     }
 
     return(
-    <div ref={forwardedRef} className="App">
+    <div style={{display:'flex',justifyContent:'center',paddingTop:'10vh',flexDirection:'column'}} ref={forwardedRef} className="App">
         {show ? <p>{JSON.stringify(student)}</p>  : <p>parent</p>}
         <button onClick={toggle}>{show ? 'Hide' : 'Show'}</button>
     </div>        

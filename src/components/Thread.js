@@ -1,7 +1,7 @@
 import {Grid,Button, Typography, IconButton} from '@material-ui/core';
 import react from 'react';
-import axios from 'axios';
-import socketIOClient from 'socket.io-client';
+import axios from 'axios'
+import { socketContext } from '../socketContext';
 import { selectSubjectContext } from './selectSubjectContext';
 import { userContext } from '../userContext';
 import { selectImgBlobReply } from './selectImgBlobReply';
@@ -22,10 +22,6 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 
 var b64toBlob = require('b64-to-blob');
 require('dotenv').config();
-const socket = socketIOClient(process.env.REACT_APP_NGROK_URL, {
-    // query: localStorage.getItem('auth-token')
-    query: `token=${localStorage.getItem('auth-token')}`
-});
 
 export default function Thread() {
     FilePond.registerPlugin(
@@ -59,6 +55,8 @@ export default function Thread() {
     const ngrok = process.env.REACT_APP_NGROK_URL;
     const api = axios.create({ baseURL: ngrok })
 
+    const {socket} = react.useContext(socketContext)
+
     const {selectSubject} = react.useContext(selectSubjectContext);
     const {user} = react.useContext(userContext);
     const [postModal,setPostModal] = react.useState(false)
@@ -74,6 +72,10 @@ export default function Thread() {
     const [mode, setMode] = react.useState(0);
     const [selectImgReply, setSelectImgReply] = react.useState(null);
     const [replyMsg, setReplyMsg] = react.useState([]);
+
+    function pushSocketNotification() {
+        socket?.emit('push-notification')
+    }
 
     function threadPost(id){
         if(user.Student_id){
@@ -111,6 +113,7 @@ export default function Thread() {
         }
         setThreadF([]);
         setImgBlob([]);
+        pushSocketNotification()
     }
 
     function sendMsg(a, student, teacher, subject, thread, room) {
@@ -121,6 +124,7 @@ export default function Thread() {
             room: room,
             msg: a
         })
+        pushSocketNotification()
     }
 
     function sendMsgAndImg(f,a,student,teacher,subject,thread,room) {
@@ -132,6 +136,7 @@ export default function Thread() {
             file: f,
             msg: a
         })
+        pushSocketNotification()
     }
 
     function ansTheard(a){
@@ -212,7 +217,7 @@ export default function Thread() {
     },[res,selectSubject]);
 
     react.useEffect(() => {
-        socket.on('new-message', (messageNew) => {
+        socket?.on('new-message', (messageNew) => {
             setReplyMsg((list) => [...list, {
                 Detail: messageNew.msg,
                 Example_file: "",
@@ -223,7 +228,7 @@ export default function Thread() {
                 Title: ""
             }])
         })
-        socket.on('new-message-image',(messageData) => {
+        socket?.on('new-message-image',(messageData) => {
             setReplyMsg((list) => [...list, {
                 Detail: messageData.msg,
                 Example_file: "",
@@ -611,6 +616,7 @@ export default function Thread() {
                                 allowDrop
                                 name="file"
                                 onaddfilestart={() => {
+                                    //submit btn issue
                                     if(files.length !== 0){
                                         setAvailableBtn(false);
                                     }
@@ -645,7 +651,7 @@ export default function Thread() {
                                 }}
                                 server={
                                     selectSubject && user ? {
-                                        process: `${ngrok}/subject/fileThread/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}`,
+                                        process: `${ngrok}subject/fileThread/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}`,
                                         revert: null
                                     }
                                     :

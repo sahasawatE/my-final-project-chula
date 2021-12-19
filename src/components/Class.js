@@ -1,6 +1,6 @@
 import react from 'react';
-import { Modal } from 'react-bootstrap';
-import { Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Typography } from '@mui/material';
+import { Modal,Form } from 'react-bootstrap';
+import { Button, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Typography } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -29,6 +29,9 @@ export default function Class({ forwardedRef }) {
 
     const studentSubmitDate = studentSubmittedWork.student.Submit_date.split(' ')[0].split('-');
     const studentSubmitTime = studentSubmittedWork.student.Submit_date.split(' ')[1].split(':');
+
+    const [score,setScore] = react.useState(0);
+    const [confirm, setConfirm] = react.useState(false);
 
     function getFile(pathFile,type){
         api.post('/subject/file', {
@@ -124,7 +127,7 @@ export default function Class({ forwardedRef }) {
         <Grid container justifyContent='center' style={{height:'90vh'}}>
             <Grid item xs={10}>
                 <Paper style={{height:'100%'}}>
-                    <Typography>{JSON.stringify(studentSubmittedWork)}</Typography>
+                    {/* <Typography>{JSON.stringify(studentSubmittedWork)}</Typography> */}
                     <Typography>ชื่องาน {studentSubmittedWork.work.Work_Name}</Typography>
                     <Typography>ลายละเอียด {studentSubmittedWork.work.Work_Detail}</Typography>
                     <Typography>คะแนนเต็ม {studentSubmittedWork.work.Score} คะแนน</Typography>
@@ -169,11 +172,51 @@ export default function Class({ forwardedRef }) {
                             );
                         })}
                     </List>
+
+                    <Form>
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>คะแนน</Form.Label>
+                                <Form.Control type="number" placeholder="คะแนน" onChange={(e) => {setScore(e.target.value)}}/>
+                            <Form.Text className="text-muted">
+                                    ให้คะแนนนักเรียนคนนี้ (คะแนนเต็ม {studentSubmittedWork.work.Score} คะแนน)
+                            </Form.Text>
+                        </Form.Group>
+                    </Form>
+                    <div style={{display:'flex',justifyContent:'flex-end'}}>
+                        <Button onClick={() => {
+                            console.log(studentSubmittedWork)
+                            if(parseInt(score) <= parseInt(studentSubmittedWork.work.Score)){
+                                setConfirm(true)
+                                // window.close()
+                            }
+                            else{
+                                alert('ควรให้คะแนนอย่างเหมาะสม')
+                                setScore(0)
+                            }
+                        }}>ให้คะแนน</Button>
+                    </div>
                 </Paper>
             </Grid>
         </Grid>
         <br/>
         <br/>
+
+        {/* confirm modal */}
+        <div>
+            <Modal centered show={confirm} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                setConfirm(false)
+            }}>
+                <Modal.Body>
+                    <Typography>ยืนยันการให้คะแนน และปิดแท็บนี้หรือไม่ ?</Typography>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Grid container justifyContent='space-between'>
+                        <Button>1</Button>
+                        <Button>2</Button>
+                    </Grid>
+                </Modal.Footer>
+            </Modal>
+        </div>
 
         {/* Image modal */}
         <div>

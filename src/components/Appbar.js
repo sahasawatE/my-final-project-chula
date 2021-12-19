@@ -10,7 +10,9 @@ import {
     Button,
     Badge
 } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 import { userContext } from '../userContext';
+import { socketContext } from '../socketContext';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import Notification from './notification/Notification';
 import HomeIcon from '@material-ui/icons/Home';
@@ -18,9 +20,10 @@ import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import axios from 'axios';
 import { selectSubjectContext } from './selectSubjectContext';
-require('dotenv').config()
+require('dotenv').config();
 
 export default function Appbar() {
+    const history = useHistory();
     const ngrok = process.env.REACT_APP_NGROK_URL;
     const api = axios.create({ baseURL: ngrok})
     const { user } = react.useContext(userContext);
@@ -28,11 +31,15 @@ export default function Appbar() {
     const [anchorElNoti, setAnchorElNoti] = react.useState(null);
     const open = Boolean(anchorEl);
     const openNoti = Boolean(anchorElNoti);
+    const [socketUser, setSocketUser] = react.useState(null);
 
     const {selectSubject} = react.useContext(selectSubjectContext)
+    const {socket} = react.useContext(socketContext)
+    const [page, setPage] = react.useState(0);
 
     const [notifications, setNotifications] = react.useState([]);
-    const [newNotiCount, setNewNotiCount] = react.useState(0);
+    const [stnewNotiCount, setstNewNotiCount] = react.useState(0);
+    const [tcnewNotiCount, settcNewNotiCount] = react.useState(0);
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -40,24 +47,38 @@ export default function Appbar() {
     const handleNoti = (event) => {
         setAnchorElNoti(event.currentTarget);
         if(user.Student_id){
-            if (newNotiCount !== 0) {
+            if (stnewNotiCount !== 0) {
                 api.post('/student/seenNotification', {
                     Student_id: user.Student_id
                 }).then(res => {
-                    setNewNotiCount(res.data);
+                    setstNewNotiCount(res.data);
                 }).catch(err => console.log(err))
             }
         }
         else if(user.Teacher_id){
-            if (newNotiCount !== 0) {
+            if (tcnewNotiCount !== 0) {
                 api.post('/teacher/seenNotification', {
                     Teacher_id: user.Teacher_id
                 }).then(res => {
-                    setNewNotiCount(res.data);
+                    settcNewNotiCount(res.data);
                 }).catch(err => console.log(err))
             }
         }
     };
+
+    react.useEffect(() => {
+        if(socketUser){
+            socket?.on('new-notification', () => {
+                if (socketUser.Student_id) {
+                    getStudentNoti(socketUser.Room_id);
+                }
+
+                if (socketUser.Teacher_id) {
+                    getTeacherNoti(socketUser.Teacher_id)
+                }
+            })
+        }
+    },[socket,socketUser])
 
     const handleClose = () => {
         setAnchorEl(null);
@@ -75,7 +96,7 @@ export default function Appbar() {
                 Noti: result.data,
                 Student_id: user.Student_id
             }).then(newNoti => {
-                setNewNotiCount(parseInt(newNoti.data))
+                setstNewNotiCount(parseInt(newNoti.data))
             }).catch(err2 => console.log(err2))
         }).catch(err => console.log(err))
     }
@@ -94,35 +115,25 @@ export default function Appbar() {
                     noti: res.data,
                     Teacher_id: teacherId
                 })
-                .then(newNoti => {setNewNotiCount(parseInt(newNoti.data))})
+                .then(newNoti => {
+                    settcNewNotiCount(parseInt(newNoti.data))
+                })
                 .catch(err2 => console.log(err2))
             })
             .catch(err1 => console.log(err1))
         }).catch(err => console.log(err))
     }
-    const MINUTE_MS = 60000;
 
     react.useEffect(() => {
         if (user.Student_id) {
+            setSocketUser(user)
             getStudentNoti(user.Room_id);
         }
 
         if (user.Teacher_id) {
+            setSocketUser(user)
             getTeacherNoti(user.Teacher_id)
         }
-
-        const interval = setInterval(() => {
-            // console.log('Logs every minute');
-            if (user.Student_id) {
-                getStudentNoti(user.Room_id);
-            }
-
-            if (user.Teacher_id) {
-                getTeacherNoti(user.Teacher_id)
-            }
-        }, MINUTE_MS);
-
-        return () => clearInterval(interval);
     }, [user,selectSubject])
 
     return (
@@ -139,10 +150,18 @@ export default function Appbar() {
                         <div></div>
                         :
                         <div>
-                            <IconButton color={window.location.pathname === '/home' ? "inherit" : "default"} onClick={() => {window.location.replace('/home')}}>
+                            <IconButton color={page === 0 ? "inherit" : "default"} onClick={() => {
+                                // window.location.replace('/home')
+                                setPage(0)
+                                history.push('/home')
+                            }}>
                                 <HomeIcon/>
                             </IconButton>
-                            <IconButton color={window.location.pathname === '/school' ? "inherit" : "default"} onClick={() => { window.location.replace('/school') }}>
+                            <IconButton color={page === 1 ? "inherit" : "default"} onClick={() => { 
+                                // window.location.replace('/school') 
+                                setPage(1)
+                                history.push('/school')
+                            }}>
                                 <AccountBalanceIcon />
                             </IconButton>    
                         </div>
@@ -164,9 +183,15 @@ export default function Appbar() {
                                         onClick={handleNoti}
                                         color="inherit"
                                     >
-                                        <Badge badgeContent={newNotiCount === 0 ? null : newNotiCount} color="error">
-                                            <NotificationsIcon/>
-                                        </Badge>
+                                        {user.Teacher_id ?
+                                            <Badge badgeContent={tcnewNotiCount === 0 ? null : tcnewNotiCount} color="error">
+                                                <NotificationsIcon />
+                                            </Badge>
+                                            :
+                                            <Badge badgeContent={stnewNotiCount === 0 ? null : stnewNotiCount} color="error">
+                                                <NotificationsIcon />
+                                            </Badge>
+                                        }
                                     </IconButton>    
                                 <Menu
                                     anchorEl={anchorElNoti}

@@ -12,6 +12,7 @@ export default function Login(){
     const api = axios.create({ baseURL: ngrok })
 
     const userInputRef = react.useRef(null);
+    const submitLogin = react.useRef(null);
 
     // const {student,setStudent} = react.useContext(userContext);
     const [token,setToken] = react.useState(null);
@@ -23,7 +24,7 @@ export default function Login(){
         }).then((result) => {
             if (result.data){
                 setToken(result.data);
-                window.location.replace('/');
+                window.location.replace('/home');
                 localStorage.setItem('auth-token',result.data);
             }
             else{
@@ -69,7 +70,7 @@ export default function Login(){
                             <AccountCircle style={{ fontSize: 36 }}/>
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField inputRef={userInputRef} style={{marginTop:'16px',width:'100%'}} label="เลขประจำตัว" type='text' value={userId} onChange={stidhandle}/>
+                            <TextField inputRef={userInputRef} style={{marginTop:'16px',width:'100%'}} label="เลขประจำตัว" type='text' value={userId} onKeyPress={(e) => e.key === 'Enter' && submitLogin?.current.click()} onChange={stidhandle}/>
                         </Grid>
                     </Grid>
                     <Grid container>
@@ -77,11 +78,11 @@ export default function Login(){
                             <VpnKeyIcon style={{ fontSize: 36 }}/>
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField style={{ marginTop: '16px', width: '100%' }} label="รหัสผ่าน" type='password' value={userPassword} onChange={stpwhandle}/>
+                            <TextField style={{ marginTop: '16px', width: '100%' }} label="รหัสผ่าน" type='password' value={userPassword} onChange={stpwhandle} onKeyPress={(e) => e.key === 'Enter' && submitLogin?.current.click()}/>
                         </Grid>
                     </Grid>
                     <Grid container>
-                        <Button style={{marginTop:'16px',backgroundColor:'#1B5ABC',color:'white',width:'100%'}} variant="contained" onClick={submit}><b>เข้าสู่ระบบ</b></Button>
+                        <Button ref={submitLogin} style={{marginTop:'16px',backgroundColor:'#1B5ABC',color:'white',width:'100%'}} variant="contained" onClick={submit}><b>เข้าสู่ระบบ</b></Button>
                     </Grid>
                     <div style={{marginTop:'16px', width:'100%',justifyContent:'center',display:'flex'}}><p>ลืมรหัสผ่าน</p></div>
                 </Grid>
