@@ -12,6 +12,11 @@ import axios from 'axios';
 import { selectSubjectContext } from './components/selectSubjectContext';
 import {socketContext} from './socketContext';
 import socketIOClient from 'socket.io-client';
+<<<<<<< HEAD
+import BGTeacher from './bgImg/Blue-Teacher.jpeg'
+import BGStudent from './bgImg/Yellow-Student.jpeg'
+=======
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 require('dotenv').config()
 
 export default function App() {
@@ -48,9 +53,12 @@ export default function App() {
     }
   },[])
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
   return(
-    <div className='main'>
+    <div className='main' style={{ backgroundImage: user.Student_id ? `url(${BGStudent})` : `url(${BGTeacher})`, backgroundColor: '#fff', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed', backgroundSize: '100% 100%',overflow:'scroll',backgroundPosition:'0px 4rem' }}>
     <Router>
       <userContext.Provider value={{user,setUser}}>
       <selectSubjectContext.Provider value={{selectSubject,setSelectSubject}}>

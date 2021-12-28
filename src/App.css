@@ -1,3 +1,6 @@
+*::-webkit-scrollbar {
+    display: none;
+}
 
 .main{
   height: 100vh;
@@ -11,6 +14,7 @@
   flex-direction: row;
   display: flex;
   justify-content: center;
+  /* backdrop-filter: blur(15px); */
 }
 .center{
   color: white;
@@ -34,21 +38,18 @@
 .loginContainer{
   display: flex;
   justify-content: center;
-  margin-top: 10vh;
+  margin-top: 20vh;
 }
 
 .login{
   display: flex;
   flex-direction: column;
+  width: 90vw
 }
 
 .loginBox{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background-color: rgba(225, 225, 225, 0.75);
-  backdrop-filter: blur(5px);
-  width: 30vw;
+  background-color: rgba(225, 225, 225, 0.5);
+  backdrop-filter: blur(6px);
   padding: 2rem;
   padding-bottom: 1rem;
   border-radius: 8px;
@@ -61,3 +62,21 @@
   height: 54vh;
 }
 
+.modal{
+  backdrop-filter: blur(18px);
+  background-color: rgba(92, 92, 92, 0.4);
+}
+
+.studentBanner {
+  background-image: url(./bgImg/Asset\ 4.jpeg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.teacherBanner {
+  background-image: url(./bgImg/Asset\ 3.jpeg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
