@@ -1,6 +1,10 @@
 import react from 'react';
 import * as FilePond from 'react-filepond';
 import axios from 'axios';
+<<<<<<< HEAD
+import { socketContext } from '../../socketContext';
+=======
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 import { Grid, List, IconButton } from '@material-ui/core';
 import { Button, Tabs, Tab, Typography, ListItem, ListItemButton, ListItemText, ListItemIcon } from '@mui/material';
 import { Form, Modal } from 'react-bootstrap';
@@ -10,6 +14,7 @@ import FolderIcon from '@material-ui/icons/Folder';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import '../../App.css'
 
 import 'filepond/dist/filepond.min.css';
 
@@ -19,6 +24,10 @@ export default function Clip(props) {
     FilePond.registerPlugin(FilePondPluginFileValidateType)
     const ngrok = process.env.REACT_APP_NGROK_URL;
     const api = axios.create({ baseURL: ngrok })
+<<<<<<< HEAD
+    const {socket} = react.useContext(socketContext);
+=======
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 
     const [clips,setClips] = react.useState([]);
     const [clipName, setClipName] = react.useState('');
@@ -32,6 +41,13 @@ export default function Clip(props) {
     const [videoModal, setVideoModal] = react.useState(false)
     const [videoPath, setVideoPath] = react.useState('');
     const [clipInSelectFolder, setClipInSelectFolder] = react.useState([]);
+<<<<<<< HEAD
+
+    function pushSocketNotification() {
+        socket?.emit('push-notification')
+    }
+=======
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 
     function createFolder(name) {
         api.post('/subject/clipCreateFolder', {
@@ -86,6 +102,17 @@ export default function Clip(props) {
                 setClipFolders(f)
             }
         }).catch(err => console.log(err))
+    }
+
+    function clipNoti(room, teacher, subject, fn) {
+        api.post('subject/uploadClipNoti', {
+            Teacher_id: teacher,
+            Room_id: room,
+            Subject_id: subject,
+            FolderName: fn
+        })
+            .then(() => pushSocketNotification())
+            .catch(err => console.log(err))
     }
 
     react.useEffect(() => {
@@ -223,7 +250,11 @@ export default function Clip(props) {
 
             {/* delete modal */}
             <div>
+<<<<<<< HEAD
+                <Modal centered backdrop="static" backdropClassName="modal" show={deleteClipModal || deleteFolderModal || deleteClipInFolderModal}>
+=======
                 <Modal centered backdrop="static" show={deleteClipModal || deleteFolderModal || deleteClipInFolderModal}>
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                         {deleteClipModal && <Typography>คุณแน่ใจหรือไม่ว่าต้องการที่จะลบเนื้อหานี้ ?</Typography>}
                         {deleteClipInFolderModal && <Typography>คุณแน่ใจหรือไม่ว่าต้องการที่จะลบเนื้อหานี้ ?</Typography>}
@@ -315,7 +346,7 @@ export default function Clip(props) {
 
             {/* folder clip modal */}
             <div>
-                <Modal centered backdrop="static" show={clipFolderModal} onHide={() => {
+                <Modal centered backdrop="static" backdropClassName="modal" show={clipFolderModal} onHide={() => {
                     setClipFolderModal(false)
                 }}>
                     <Modal.Header closeButton><FolderIcon color='action' /><Typography style={{marginLeft:'0.5rem'}}>{selectClipFolder}</Typography></Modal.Header>
@@ -341,7 +372,11 @@ export default function Clip(props) {
                                                             onprocessfilestart={() => setCancelBtn(false)}
                                                             acceptedFileTypes={['video/*']}
                                                             server={props.subject && {
+<<<<<<< HEAD
+                                                                process: `${ngrok}teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}/${clipName}`,
+=======
                                                                 process: `${ngrok}/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}/${clipName}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                                 revert: null
                                                             }}
                                                             onprocessfiles={async () => {
@@ -470,7 +505,11 @@ export default function Clip(props) {
 
             {/* Video Modal */}
             <div>
+<<<<<<< HEAD
+                <Modal centered backdrop="static" backdropClassName="modal" size="lg" show={videoModal} onHide={() => {
+=======
                 <Modal centered backdrop="static" size="lg" show={videoModal} onHide={() => {
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     setVideoModal(false);
                     setVideoPath('');
                     //system performance
@@ -479,7 +518,11 @@ export default function Clip(props) {
                     <Modal.Body>
                         {videoPath.length !== 0 && 
                         <video id="videoPlayer" width="100%" controls autoPlay>
+<<<<<<< HEAD
+                            <source src={`${ngrok}teacher/video/${videoPath.split('/').at(-2)}/${videoPath.split('/').at(-1)}/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}`} type="video/mp4" />
+=======
                             <source src={`${ngrok}/teacher/video/${videoPath.split('/').at(-2)}/${videoPath.split('/').at(-1)}/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}`} type="video/mp4" />
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                         </video>
                         }
                     </Modal.Body>
@@ -487,7 +530,7 @@ export default function Clip(props) {
             </div>
 
             {/* Modal upload Clip */}
-            <Modal centered backdrop="static" show={uploadClip}>
+            <Modal centered backdrop="static" backdropClassName="modal" show={uploadClip}>
                 <Modal.Header>
                     อัพโหลดคลิป
                 </Modal.Header>
@@ -540,11 +583,18 @@ export default function Clip(props) {
                                                     credits={false}
                                                     onprocessfilestart={() => {
                                                         setCancelBtn(false);
+<<<<<<< HEAD
+                                                    }}
+                                                    acceptedFileTypes={['video/*']}
+                                                    server={{
+                                                        process: `${ngrok}teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${newFolderName}/${clipName}`,
+=======
                                                         setOkBtn(false);
                                                     }}
                                                     acceptedFileTypes={['video/*']}
                                                     server={{
                                                         process: `${ngrok}/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${newFolderName}/${clipName}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         revert: null
                                                     }}
                                                     onprocessfiles={async () => {
@@ -617,7 +667,11 @@ export default function Clip(props) {
                                     }}
                                     acceptedFileTypes={['video/*']}
                                     server={{
+<<<<<<< HEAD
+                                        process: `${ngrok}teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder/${clipName}`,
+=======
                                         process: `${ngrok}/teacher/uploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder/${clipName}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                         revert: null
                                     }}
                                     onprocessfiles={async () => {
@@ -642,6 +696,10 @@ export default function Clip(props) {
                                             })
                                             .then(() => {
                                                 setCancelBtn(true);
+<<<<<<< HEAD
+                                                setOkBtn(true);
+=======
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                             })
                                             .catch(err => console.log(err))
                                     }}
@@ -672,6 +730,7 @@ export default function Clip(props) {
                                 if(newFolderName.length === 0){
                                     if (clipsInFolder.length === 0) {
                                         setUploadClip(false)
+                                        setOkBtn(false);
                                         setClipName('');
                                     }
                                 }
@@ -695,6 +754,7 @@ export default function Clip(props) {
                                             setNewFolderName('');
                                             setUploadClip(false);
                                             setFolderCreate(false);
+                                            setOkBtn(false);
                                             setClipName('');
                                             setClipsInFolder([]);
                                             setClips([]);
@@ -714,6 +774,7 @@ export default function Clip(props) {
                                             setFolderCreate(false);
                                             setClipName('');
                                             setClipsInFolder([]);
+                                            setOkBtn(false);
                                             setClips([]);
                                             allVideosAndFolders();
                                         })
@@ -733,8 +794,15 @@ export default function Clip(props) {
                                     setNewFolderName('');
                                     setFolderCreate(false);
                                     setUploadClip(false);
+<<<<<<< HEAD
+                                    setOkBtn(false);
                                     setClipName('');
                                     allVideosAndFolders();
+                                    clipNoti(props.subject.Room_id, props.subject.Teacher_id, props.subject.Subject_id, newFolderName)
+=======
+                                    setClipName('');
+                                    allVideosAndFolders();
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 }}>ตกลง</Button>
                                 :
                                 <Button variant='outlined' color='primary' onClick={() => {
@@ -742,9 +810,17 @@ export default function Clip(props) {
                                     setNewFolderName('');
                                     setClipsInFolder([]);
                                     setUploadClip(false);
+<<<<<<< HEAD
+                                    setOkBtn(false);
                                     setFolderCreate(false);
                                     setClipName('');
                                     allVideosAndFolders();
+                                    clipNoti(props.subject.Room_id, props.subject.Teacher_id, props.subject.Subject_id, newFolderName)
+=======
+                                    setFolderCreate(false);
+                                    setClipName('');
+                                    allVideosAndFolders();
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 }}>ตกลง</Button>
                         :
                         <Button variant='outlined' disabled>ตกลง</Button>

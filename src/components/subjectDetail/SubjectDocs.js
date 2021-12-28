@@ -1,15 +1,60 @@
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
 import Documents from './Documents';
 import Clip from './Clip';
 import Works from './Works';
 import axios from 'axios';
 import React from 'react';
 import {Grid} from '@material-ui/core'
+import { Tab, Tabs, Box } from '@mui/material';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import PropTypes from 'prop-types';
 import { userContext } from '../../userContext';
+import { blue, green, purple } from '@mui/material/colors';
 
 require('dotenv').config()
 // /Users/yen/Desktop/FinalProject/server/Route/uploads/
+
+function TabPanel(props) {
+    const { value, index } = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+        >
+            {value === 0 ?
+                <Grid container justifyContent="center" direction="column" style={{paddingTop:'1rem'}}>
+                    <Documents user={props.user} class={props.class} subject={props.subject} />
+                </Grid>
+                :
+                value === 1 ?
+                    <Grid container justifyContent="center" direction="column" style={{ paddingTop: '1rem' }} >
+                        <Clip user={props.user} class={props.class} subject={props.subject} />
+                    </Grid>
+                    :
+                    <Grid container justifyContent="center" direction="column" style={{ paddingTop: '1rem' }} >
+                        <Works user={props.user} class={props.class} subject={props.subject} />
+                    </Grid>
+            }
+        </div>
+    );
+}
+
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+    return {
+        id: `simple-tab-${index}`,
+        'aria-controls': `simple-tabpanel-${index}`,
+    };
+}
 
 export default function SubjectDocs(props){
     const ngrok = process.env.REACT_APP_NGROK_URL;
@@ -26,6 +71,15 @@ export default function SubjectDocs(props){
     const [subject,setSubject] = React.useState(null)
     const [roomClass,setRoomClass] = React.useState(null)
 
+<<<<<<< HEAD
+    const [value, setValue] = React.useState(0);
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
+=======
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
     React.useEffect(() => {
         if (teacherId && selectedSubject){
             axios.post(`${ngrok}teacher/subject`, {
@@ -42,7 +96,11 @@ export default function SubjectDocs(props){
             }).catch(error => console.log(error))
         }
         if (room && selectedSubject){
+<<<<<<< HEAD
+            axios.post(`${ngrok}subject/subjectDetail`, {
+=======
             axios.post(`${ngrok}/subject/subjectDetail`, {
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                 Subject_id: selectedSubject.name,
                 Room_id: room
             }).then(result => {
@@ -52,30 +110,17 @@ export default function SubjectDocs(props){
     },[selectedSubject,room,teacherId,ngrok]);
 
     return(
-        <div>
-            <Tabs>
-                <TabList>
-                    <Tab>เอกสาร</Tab>
-                    <Tab>คลิป</Tab>
-                    <Tab>งาน</Tab>
-                </TabList>
-
-                <TabPanel>
-                    <Grid container justifyContent="center" direction="column">
-                        <Documents user={user} class={roomClass} subject={subject}/>
-                    </Grid>
-                </TabPanel>
-                <TabPanel>
-                    <Grid container justifyContent="center" direction="column">
-                        <Clip user={user} class={roomClass} subject={subject}/>
-                    </Grid>
-                </TabPanel>
-                <TabPanel>
-                    <Grid container justifyContent="center" direction="column">
-                        <Works user={user} class={roomClass} subject={subject}/>
-                    </Grid>
-                </TabPanel>
-            </Tabs>
-        </div>
+        <Box sx={{ width: '100%' }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={value} onChange={handleChange} aria-label="basic tabs" variant="fullWidth">
+                    <Tab icon={<InsertDriveFileIcon />} style={value === 0 ? { flexDirection: 'row', color:blue[500]} : {flexDirection:'row'}} label="&nbsp;เอกสาร" {...a11yProps(0)} />
+                    <Tab icon={<PlayCircleOutlineIcon />} style={value === 1 ? { flexDirection: 'row', color: green[500] } : { flexDirection: 'row'}} label="&nbsp;คลิป" {...a11yProps(1)} />
+                    <Tab icon={<DriveFileRenameOutlineIcon />} style={value === 2 ? { flexDirection: 'row', color: purple[500] } : { flexDirection: 'row'}} label="&nbsp;งาน" {...a11yProps(2)} />
+                </Tabs>
+            </Box>
+            <TabPanel value={value} index={0} user={user} class={roomClass} subject={subject}/>
+            <TabPanel value={value} index={1} user={user} class={roomClass} subject={subject}/>
+            <TabPanel value={value} index={2} user={user} class={roomClass} subject={subject}/>
+        </Box>
     );
 }

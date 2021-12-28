@@ -4,6 +4,7 @@ import {  ListItem, ListItemButton, ListItemText } from '@mui/material';
 import axios from 'axios';
 import {Tab, Tabs} from '@mui/material'
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import { socketContext } from '../../socketContext';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 import AddIcon from '@mui/icons-material/Add';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -11,11 +12,13 @@ import FolderIcon from '@material-ui/icons/Folder';
 import { Form, Modal } from 'react-bootstrap';
 import * as FilePond from 'react-filepond';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../../App.css'
 import 'filepond/dist/filepond.min.css'
 
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
 import StudentDocument from './StudentDocument';
+import { blue, grey } from '@mui/material/colors';
 
 var b64toBlob = require('b64-to-blob');
 require('dotenv').config()
@@ -28,9 +31,14 @@ export default function Documents(props){
     const api = axios.create({ baseURL: ngrok })
 
     const subject = props.subject;
+    const {socket} = react.useContext(socketContext);
 
     const [folders, setFolders] = react.useState([]);
     const [role,setRole] = react.useState('teacher');
+
+    function pushSocketNotification() {
+        socket?.emit('push-notification')
+    }
 
     function getAllFileTeacher(roomId,teacherId,subjectId,noFolder){
         if(noFolder){
@@ -145,6 +153,7 @@ export default function Documents(props){
             Subject_id : subject,
             FolderName : fn
         })
+        .then(() => pushSocketNotification())
         .catch(err => console.log(err))
     }
 
@@ -226,7 +235,11 @@ export default function Documents(props){
                                                 <ListItemButton onClick={() => {
                                                         getFile(value.File_Path.split('/').at(-1));
                                                 }}>
+<<<<<<< HEAD
+                                                    <InsertDriveFileIcon style={{color:blue[800]}}/>
+=======
                                                     <InsertDriveFileIcon />
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                     <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('/').at(-1)}</ListItemText>
                                                 </ListItemButton>
                                             </ListItem>
@@ -249,7 +262,11 @@ export default function Documents(props){
                                                     <ListItemButton onClick={() => {
                                                         enterF(value.split('/').at(-1))
                                                     }}>
+<<<<<<< HEAD
+                                                        <FolderIcon style={{color:grey[600]}}/>
+=======
                                                         <FolderIcon />
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
                                                     </ListItemButton>
                                                 </ListItem>
@@ -265,7 +282,7 @@ export default function Documents(props){
 
                     {/* Modal create content */}
                     <div>
-                        <Modal centered show={createContent} backdrop="static">
+                        <Modal centered show={createContent} backdropClassName="modal" backdrop="static">
                             <Modal.Body>
                                 <Grid container direction='column'>
                                     <Tabs variant="fullWidth" value={tabValue} onChange={(e, v) => {
@@ -312,7 +329,11 @@ export default function Documents(props){
                                                     allowRevert
                                                     // allowRemove={false}
                                                     server={props.subject && {
+<<<<<<< HEAD
+                                                        process: `${ngrok}teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
+=======
                                                         process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         revert: null
                                                     }}
                                                     name="file"
@@ -364,7 +385,11 @@ export default function Documents(props){
                                             allowDrop
                                             // allowRemove={false}
                                             server={props.subject && {
+<<<<<<< HEAD
+                                                process: `${ngrok}teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
+=======
                                                 process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 revert: null
                                             }}
                                             name="file"
@@ -483,7 +508,7 @@ export default function Documents(props){
 
                     {/* Modal Upload Files */}
                     <div>
-                        <Modal centered show={enterFolder} backdrop="static" onHide={() => {
+                        <Modal centered show={enterFolder} backdropClassName="modal" backdrop="static" onHide={() => {
                             setEnterFolder(false);
                             setSelectFolder('');
                         }}>
@@ -500,7 +525,11 @@ export default function Documents(props){
                                             allowDrop
                                             allowRevert
                                             server={props.subject && {
+<<<<<<< HEAD
+                                                process: `${ngrok}teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
+=======
                                                 process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 revert: null
                                             }}
                                             name="file"
@@ -549,6 +578,7 @@ export default function Documents(props){
                                                 })
                                                 .then(setUploadFiles([]))
                                                 .then(setFinistUploadFile(false))
+                                                .then(docNoti(props.subject.Room_id, props.user.Teacher_id, props.subject.Subject_id, selectFolder))
                                                 .catch(err => console.log(err))
                                                 enterF(selectFolder);
                                             }}>อัพโหลด</Button>
@@ -576,7 +606,11 @@ export default function Documents(props){
                                                     <ListItemButton onClick={() => {
                                                         getFile(value.File_Path.split('\\').pop().split('/').pop())
                                                     }}>
+<<<<<<< HEAD
+                                                        <InsertDriveFileIcon  style={{color:blue[800]}}/>
+=======
                                                         <InsertDriveFileIcon />
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
                                                     </ListItemButton>
                                                 </ListItem>
@@ -596,7 +630,7 @@ export default function Documents(props){
 
                     {/* Modal Confirm Delete File */}
                     <div>
-                        <Modal centered backdrop="static" show={modalDeleteFile}>
+                        <Modal centered backdrop="static" backdropClassName="modal" show={modalDeleteFile}>
                             <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                                 คุณต้องการที่จะลบเนื้อหานี้หรือไม่ ?
                             </Modal.Body>
@@ -619,7 +653,7 @@ export default function Documents(props){
 
                     {/* Modal delete Folder */}
                     <div>
-                        <Modal centered backdrop="static" show={modalDeleteFolder}>
+                        <Modal centered backdrop="static" backdropClassName="modal" show={modalDeleteFolder}>
                             <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                                 เนื้อหาในโฟเดอร์นี้จะหาไปอย่างถาวร คุณต้อจะลบโฟลเดอร์นี้หรือไม่ ?
                             </Modal.Body>

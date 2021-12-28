@@ -7,6 +7,7 @@ import react from 'react';
 import { selectSubjectContext } from '../selectSubjectContext';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import Chip from '@mui/material/Chip';
+import { socketContext } from '../../socketContext';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
@@ -14,6 +15,7 @@ import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutli
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import * as FilePond from 'react-filepond';
+import '../../App.css'
 import 'filepond/dist/filepond.min.css'
 
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
@@ -28,6 +30,7 @@ export default function Works(props) {
     const api = axios.create({ baseURL: ngrok })
     const user = props.user
     const {selectSubject} = react.useContext(selectSubjectContext);
+    const {socket} = react.useContext(socketContext);
 
     const [studentUpload, setStudentUpload] = react.useState(false);
     const [studentPrepareWorkFile, setStudentPrepareWorkFile] = react.useState([]);
@@ -43,6 +46,10 @@ export default function Works(props) {
     const [addFile,setAddFile] = react.useState(false);
     const [deleteWork,setDeleteWork] = react.useState(null)
     const [deleteModal, setDeleteModal] = react.useState(false);
+
+    function pushSocketNotification() {
+        socket?.emit('push-notification')
+    }
 
     function createWork(name,detail,deadline,point){
         api.post('/teacher/addWork',{
@@ -79,13 +86,14 @@ export default function Works(props) {
     }
 
     function afterCreateWork(){
+        pushSocketNotification()
         setModalCreateWork(false);
         setWorkName('');
         setWorkDetail('');
         setWorkPoint(10);
         setAddFile(false);
         setWorkFile([]);
-        getAllWork()
+        getAllWork();
     }
 
     function deleteHandle(work){
@@ -239,7 +247,11 @@ export default function Works(props) {
 
                 {/* hideModal */}
                 <div>
+<<<<<<< HEAD
+                    <Modal centered backdrop="static" backdropClassName="modal" show={hideWorkModal}>
+=======
                     <Modal centered backdrop="static" show={hideWorkModal}>
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             คุณต้องการที่จะปิดการมองเห็นเนื้อหานี้หรือไม่ ?
                         </Modal.Body>
@@ -264,7 +276,11 @@ export default function Works(props) {
 
                 {/* un-hideModal */}
                 <div>
+<<<<<<< HEAD
+                    <Modal centered backdrop="static" backdropClassName="modal" show={unHideWorkModal}>
+=======
                     <Modal centered backdrop="static" show={unHideWorkModal}>
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             คุณต้องการที่จะเปิดการมองเห็นเนื้อหานี้หรือไม่ ?
                         </Modal.Body>
@@ -289,7 +305,7 @@ export default function Works(props) {
 
                 {/*create modal */}
                 <div>
-                    <Modal centered backdrop="static" show={modalCreateWork} onHide={() => {
+                    <Modal centered backdrop="static" backdropClassName="modal" show={modalCreateWork} onHide={() => {
                         if (workFile.length === 0) {
                             deletePrepare([])
                         }
@@ -306,23 +322,27 @@ export default function Works(props) {
                                         <div>
                                             <Form.Group>
                                                 <Form.Label>ชื่องาน</Form.Label>
-                                                <Form.Control style={{ width: '100%' }} type="text" disabled onChange={(e) => setWorkName(e.target.value)} placeholder="เขียนชื่อหัวข้อของงาน" />
+                                                <Form.Control style={{ width: '100%' }} type="text" disabled placeholder="เขียนชื่อหัวข้อของงาน" />
                                             </Form.Group>
                                             <Form.Group>
                                                 <Form.Label>รายละเอียด</Form.Label>
-                                                <Form.Control onChange={(e) => setWorkDetail(e.target.value)} disabled placeholder="เขียนรายละเอียดของงาน" as="textarea" rows={3} style={{ maxHeight: '95px' }} />
+                                                <Form.Control disabled placeholder="เขียนรายละเอียดของงาน" as="textarea" rows={3} style={{ maxHeight: '95px' }} />
                                             </Form.Group>
                                             <Grid container direction='row' justifyContent='space-between'>
                                                 <div style={{width:'70%'}}>
                                                     <Form.Group>
                                                         <Form.Label>กำหนดส่ง</Form.Label>
+<<<<<<< HEAD
+                                                            <Form.Control type='datetime-local' disabled />
+=======
                                                             <Form.Control type='datetime-local' disabled onChange={(e) => setWorkDeadline(e.target.value)} />
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                     </Form.Group>
                                                 </div>
                                                 <div style={{ width: '25%' }} >
                                                     <Form.Group>
                                                         <Form.Label>คะแนนเต็ม</Form.Label>
-                                                        <Form.Control type='number' value={workPoint} disabled onChange={(e) => setWorkPoint(e.target.value)} />
+                                                        <Form.Control type='number' value={workPoint} disabled />
                                                     </Form.Group>
                                                 </div>
                                             </Grid>
@@ -395,7 +415,11 @@ export default function Works(props) {
                                                     }).then(console.log('deleted')).catch(err => console.log(err))
                                                 }}
                                                 server={{
+<<<<<<< HEAD
+                                                    process : `${ngrok}teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
+=======
                                                     process : `${ngrok}/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                     revert: null
                                                 }}
                                                 labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
@@ -419,12 +443,14 @@ export default function Works(props) {
                             }}>ยกเลิก</Button>
                             {workName !== '' && workDetail !== '' && workDeadline !== '' ?
                                 workFile.length === 0 ?
-                                    <Button variant="outlined" color="primary" onClick={() => 
+                                    <Button variant="outlined" color="primary" onClick={() => {
                                         createWork(workName,workDetail,workDeadline,workPoint)
+                                    }
                                     }>สร้าง</Button>
                                     :
-                                    <Button variant="outlined" color="primary" onClick={() => 
+                                    <Button variant="outlined" color="primary" onClick={() => {
                                         updataCreateWork(workName, workDetail, workDeadline, workPoint)
+                                    }
                                     }>สร้าง</Button>
                                 :
                                 <Button variant="outlined" color="primary" disabled>สร้าง</Button>
@@ -434,7 +460,11 @@ export default function Works(props) {
                 </div>
 
                 {/* img modal */}
+<<<<<<< HEAD
+                <Modal centered backdropClassName="modal" show={teacherSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+=======
                 <Modal centered show={teacherSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     setTeacherSelectImg(null);
                     setTeacherWorkModal(true);
                 }}>
@@ -443,7 +473,7 @@ export default function Works(props) {
 
                 {/* deleteModal */}
                 <div>
-                    <Modal centered backdrop="static" show={deleteModal}>
+                    <Modal centered backdropClassName="modal" backdrop="static" show={deleteModal}>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             คุณต้องการที่จะลบเนื้อหานี้หรือไม่ ?
                         </Modal.Body>
@@ -457,7 +487,7 @@ export default function Works(props) {
                 {/* work modal */}
                 <div>
                     {selectWork ?
-                        <Modal centered show={teacherWorkModal} backdrop="static" onHide={() => {
+                        <Modal centered backdropClassName="modal" show={teacherWorkModal} backdrop="static" onHide={() => {
                             setTeacherWorkModal(false)
                         }}>
                             <Modal.Header closeButton>
@@ -542,7 +572,7 @@ export default function Works(props) {
                 {/* Submittion Work Modal */}
                 <div>
                     {selectWork &&
-                        <Modal centered show={viewWorkSubmit} backdrop="static" onHide={() => {
+                        <Modal backdropClassName="modal" centered show={viewWorkSubmit} backdrop="static" onHide={() => {
                             setViewWorkSubmit(false);
                             setTeacherWorkModal(true);
                         }}>
@@ -708,7 +738,7 @@ export default function Works(props) {
                 {/* work modal */}
                 <div>
                     { selectWork ? 
-                        <Modal centered backdrop="static" show={studentOpenWork} onHide={() => {
+                        <Modal backdropClassName="modal" centered backdrop="static" show={studentOpenWork} onHide={() => {
                         setStudentOpenWork(false);
                         setReadMore(false);
                         setSelectWork(null);
@@ -776,7 +806,11 @@ export default function Works(props) {
                                             credits={false}
                                             allowRevert
                                             server={{
+<<<<<<< HEAD
+                                                process: `${ngrok}student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
+=======
                                                 process: `${ngrok}/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 revert: null
                                             }}
                                             onprocessfiles={async () => {
@@ -933,7 +967,11 @@ export default function Works(props) {
                 </div>
 
                 {/* img modal */}
+<<<<<<< HEAD
+                <Modal backdropClassName="modal" centered show={studentSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+=======
                 <Modal centered show={studentSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     setStudentSelectImg(null);
                     setStudentOpenWork(true);
                 }}>

@@ -4,6 +4,7 @@ import axios from 'axios';
 import FolderIcon from '@material-ui/icons/Folder';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { Modal } from 'react-bootstrap';
+import { blue, grey } from '@mui/material/colors';
 
 var b64toBlob = require('b64-to-blob');
 require('dotenv').config()
@@ -82,7 +83,7 @@ export default function StudentDocument(props){
                                     getFile(value.fileId);
                                     setSelectFolder(value.path.split('/').at(-1))
                                 }}>
-                                    <FolderIcon />
+                                    <FolderIcon style={{color:grey[600]}}/>
                                     <ListItemText style={{ paddingLeft: '1rem' }} >{value.path.split('/').at(-1)}</ListItemText>
                                 </ListItem>
                             );
@@ -94,7 +95,7 @@ export default function StudentDocument(props){
                     {noFolderFiles.length !== 0 && noFolderFiles.map((value, index) => {
                         return(
                             <ListItem key={`noFolderFileNO${index}`} button onClick={() => File(value.File_Path)}>
-                                <InsertDriveFileIcon />
+                                <InsertDriveFileIcon style={{color:blue[800]}}/>
                                 <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
                             </ListItem>
                         );
@@ -105,14 +106,14 @@ export default function StudentDocument(props){
 
             {/* Modal */}
             <div>
-                <Modal centered show={enterFolder} backdrop="static" onHide={() => {
+                <Modal centered show={enterFolder} backdropClassName="modal" backdrop="static" onHide={() => {
                     setSelectFolder('');
                     setEnterFolder(false);
                     setFiles([]);
                 }}>
                     <Modal.Header closeButton>
                         <div style={{ display: 'flex', flexDirection: 'row', color: 'gray' }}>
-                            <FolderIcon /><Typography style={{ paddingLeft: '1rem', color: 'black' }}>{selectFolder}</Typography>
+                            <FolderIcon style={{color:grey[800]}}/><Typography style={{ paddingLeft: '1rem', color: 'black' }}>{selectFolder}</Typography>
                         </div>
                     </Modal.Header>
                     <Modal.Body>
@@ -122,7 +123,7 @@ export default function StudentDocument(props){
                                     files.map((value, index) => {
                                         return(
                                             <ListItem key={`fileInFolderNo${index}`} button onClick={() => File(value.File_Path)}>
-                                                <InsertDriveFileIcon />
+                                                <InsertDriveFileIcon  style={{color:blue[800]}}/>
                                                 <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
                                             </ListItem>
                                         );
