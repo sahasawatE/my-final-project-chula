@@ -165,7 +165,7 @@ export default function Documents(props){
 
             if(props.subject){
                 getAllFileTeacher(props.subject.Room_id,props.user.Teacher_id,props.subject.Subject_id,uploadFileWithoutFolder);
-                setDir(`/Users/yen/Desktop/FinalProject/component/final/src/components/uploads/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}`);
+                setDir(`/home/tkschool/Files/uploads/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}`);
             }
         }
         else if (props.user.Student_id){

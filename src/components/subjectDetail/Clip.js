@@ -406,10 +406,10 @@ export default function Clip(props) {
                                                 <Grid item xs={12} style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                     {uploadBtn && <Button color='primary' onClick={() => {
                                                         api.post('/subject/updateClipList', {
-                                                            path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}`
+                                                            path: `/home/tkschool/Files/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}`
                                                         }).then(() => {
                                                             api.post('subject/enterClipFolder', {
-                                                                path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}`
+                                                                path: `/home/tkschool/Files/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${selectClipFolder}`
                                                             }).then(res2 => setClipInSelectFolder(res2.data)).catch(err2 => console.log(err2))
                                                         }).then(() => {
                                                             setClips([]);
@@ -700,7 +700,7 @@ export default function Clip(props) {
                                             clips.map(async v => {
                                                 await api.delete('/subject/CancelClipFiles', {
                                                     data: {
-                                                        path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder`,
+                                                        path: `/home/tkschool/Files/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder`,
                                                         name: v.file.name
                                                     }
                                                 })
@@ -708,7 +708,7 @@ export default function Clip(props) {
                                             })
                                         );
                                         await api.post('/subject/updateClipList', {
-                                            path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder`
+                                            path: `/home/tkschool/Files/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/noFolder`
                                         })
                                         .then(() => {
                                             setNewFolderName('');
@@ -725,7 +725,7 @@ export default function Clip(props) {
                                     else {
                                         api.delete('/subject/CancelClipFolder', {
                                             data: {
-                                                path: `/Users/yen/Desktop/FinalProject/component/final/src/components/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${newFolderName}`
+                                                path: `/home/tkschool/Files/TeacherUploadClip/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}/${newFolderName}`
                                             }
                                         })
                                         .then(() => {
