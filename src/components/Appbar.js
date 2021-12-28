@@ -7,10 +7,7 @@ import {
     Button,
     Badge
 } from '@material-ui/core';
-<<<<<<< HEAD
 import {Menu, MenuItem, Typography} from '@mui/material'
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 import { useHistory } from 'react-router-dom';
 import { userContext } from '../userContext';
 import { socketContext } from '../socketContext';
@@ -23,10 +20,7 @@ import Logout from '@mui/icons-material/Logout';
 import axios from 'axios';
 import '../App.css';
 import { selectSubjectContext } from './selectSubjectContext';
-<<<<<<< HEAD
 import { blue, grey } from '@mui/material/colors';
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 require('dotenv').config();
 
 export default function Appbar() {
@@ -39,11 +33,8 @@ export default function Appbar() {
     const open = Boolean(anchorEl);
     const openNoti = Boolean(anchorElNoti);
     const [socketUser, setSocketUser] = react.useState(null);
-<<<<<<< HEAD
 
     const notiModal = react.useRef(null);
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 
     const {selectSubject} = react.useContext(selectSubjectContext)
     const {socket} = react.useContext(socketContext)
@@ -165,22 +156,14 @@ export default function Appbar() {
                         <div></div>
                         :
                         <div>
-<<<<<<< HEAD
                             <IconButton style={page === 0 ? {color:blue[900]} : {color:grey[500]}} onClick={() => {
-=======
-                            <IconButton color={page === 0 ? "inherit" : "default"} onClick={() => {
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 // window.location.replace('/home')
                                 setPage(0)
                                 history.push('/home')
                             }}>
                                 <HomeIcon/>
                             </IconButton>
-<<<<<<< HEAD
                             <IconButton  style={page === 1 ? {color:blue[900]} : {color:grey[500]}} onClick={() => { 
-=======
-                            <IconButton color={page === 1 ? "inherit" : "default"} onClick={() => { 
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 // window.location.replace('/school') 
                                 setPage(1)
                                 history.push('/school')

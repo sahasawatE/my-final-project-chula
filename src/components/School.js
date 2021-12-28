@@ -1,10 +1,6 @@
 import react from 'react';
-<<<<<<< HEAD
 import {ListItem} from '@material-ui/core'
 import { Grid, Paper, InputBase, Typography, styled, List, ListItemIcon, ListItemText,IconButton } from '@mui/material'
-=======
-import { Grid, Paper, InputBase, Typography, styled, List, ListItem, ListItemButton, ListItemIcon, ListItemText,IconButton } from '@mui/material'
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
@@ -123,19 +119,11 @@ export default function School({forwardedRef}){
     const [searchTeacher, setSearchTeacher] = react.useState([]);
 
     return(
-<<<<<<< HEAD
     <div ref={forwardedRef} className="App" style={{height:'71vh'}}>
         <Grid container direction='row' justifyContent='center'>
             <Grid item xs={5} style={{height:'100%',marginTop:'2rem'}}>
                 <div style={{marginRight:'0.25rem',marginLeft:'0.75rem'}}>
                     <Paper component="form" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', backgroundColor: '#ffffff', borderRadius: '16px' }}>
-=======
-    <div ref={forwardedRef} className="App">
-        <Grid container direction='row' justifyContent='center'>
-            <Grid item xs={5}>
-                <div style={{marginRight:'0.25rem',marginLeft:'0.75rem',marginTop:'2rem'}}>
-                    <Paper component="form" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', backgroundColor: '#ffffff' }}>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                         <SearchIcon />
                         <InputBase
                             style={{ flex: 1, width: '100%' }}
@@ -177,11 +165,7 @@ export default function School({forwardedRef}){
                         {searchTeacher.length !== 0 &&
                             <Grid container direction='column' style={{ zIndex: '100', position: 'absolute' }}>
                                 <Grid item xs={12}>
-<<<<<<< HEAD
                                     <Paper style={{ width: '40.5vw', marginTop: '0.1rem', maxHeight: '32vh', overflow: 'scroll', borderRadius: '16px' }}>
-=======
-                                    <Paper style={{ width: '40.5vw', marginTop: '0.5rem', maxHeight: '32vh', overflow: 'scroll' }}>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                         <div style={{ padding: '0.5rem' }}>
                                             <List>
                                                 {searchTeacher.length !== 0 &&
@@ -209,11 +193,7 @@ export default function School({forwardedRef}){
                                 </Grid>
                             </Grid>
                         }
-<<<<<<< HEAD
                     <Paper style={{display:'flex',flexDirection:'column',marginTop:'0.5rem',maxHeight:'71vh',overflow:'scroll', borderRadius:'16px'}}>
-=======
-                    <Paper style={{marginTop:'1rem',maxHeight:'70vh',overflow:'scroll'}}>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     {teacherSubject.map((value,index) => {
                         return(
                         <div key={`teacherNO${index}`}>
@@ -227,7 +207,6 @@ export default function School({forwardedRef}){
                                         listData[index].length !== 0 ? 
                                         listData[index].map((value1, index1) => {
                                             return(
-<<<<<<< HEAD
                                                 <ListItem key={`teacherDetailNO${index1}`} style={value1.Teacher_id === selectTeacher.Teacher_id ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius: '0.5rem' } : { borderRadius: '0.5rem' }} button onClick={() => setSelectTeacher(value1)}>
                                                     <ListItemIcon>
                                                         <AccountCircleIcon/>
@@ -235,17 +214,6 @@ export default function School({forwardedRef}){
                                                     <ListItemText>
                                                         <Typography>{value1.Teacher_FirstName} {value1.Teacher_LastName}</Typography>
                                                     </ListItemText>
-=======
-                                                <ListItem key={`teacherDetailNO${index1}`} style={value1.Teacher_id === selectTeacher.Teacher_id ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius: '0.5rem' } : { borderRadius: '0.5rem'}}>
-                                                    <ListItemButton onClick={() => setSelectTeacher(value1)}>
-                                                        <ListItemIcon>
-                                                            <AccountCircleIcon/>
-                                                        </ListItemIcon>
-                                                        <ListItemText>
-                                                            <Typography>{value1.Teacher_FirstName} {value1.Teacher_LastName}</Typography>
-                                                        </ListItemText>
-                                                    </ListItemButton>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 </ListItem>
                                             );
                                         })
@@ -265,7 +233,6 @@ export default function School({forwardedRef}){
                     </Paper>
                 </div>
             </Grid>
-<<<<<<< HEAD
             <Grid item xs={3} style={{height:'100%',marginTop:'2rem'}}>
                 <Paper style={{marginLeft:'0.25rem',marginRight:'0.75rem', borderRadius:'16px'}}>
                     {selectTeacher && 
@@ -274,16 +241,6 @@ export default function School({forwardedRef}){
                             <Grid item xs={3}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
                             <Grid item xs={9}>
                                 <Grid container justifyContent='flex-start' direction='column' style={{paddingLeft:'0.5rem'}}>
-=======
-            <Grid item xs={3}>
-                <Paper style={{marginLeft:'0.25rem',marginRight:'0.75rem',marginTop:'2rem'}}>
-                    {selectTeacher && 
-                    <div style={{ paddingLeft: '1rem', overflow: 'scroll', maxHeight: '77vh',height:'77vh',width:'100%'}}>
-                        <Grid container justifyContent='center' direction='row'>
-                            <Grid item xs={3}><AccountCircleIcon sx={{ fontSize: '4rem' }} /></Grid>
-                            <Grid item xs={9}>
-                                <Grid container justifyContent='flex-start' direction='column'>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                     <Grid item xs={12} style={{paddingTop:'0.7rem'}}><Typography>{`${selectTeacher.Teacher_FirstName} ${selectTeacher.Teacher_LastName}`}</Typography></Grid>
                                     <Grid item xs={12}><Typography>{selectTeacher.Major}</Typography></Grid>
                                 </Grid>
@@ -296,50 +253,30 @@ export default function School({forwardedRef}){
                                 <a href={`tel:${selectTeacher.Teacher_Phone}`}>
                                     <Grid container style={{paddingBottom:'0.5rem'}}>
                                         <Grid item xs={2}><LocalPhoneIcon/></Grid>
-<<<<<<< HEAD
                                         <Grid item xs={10} style={{paddingLeft:'0.5rem'}}>{selectTeacher.Teacher_Phone}</Grid>
-=======
-                                        <Grid item xs={10}>{selectTeacher.Teacher_Phone}</Grid>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                     </Grid>
                                 </a>}
                                 {String(selectTeacher.Teacher_Email).length !== 0 &&
                                 <a href={`mailto:${selectTeacher.Teacher_Email}`} target="_blank" rel="noreferrer">
                                     <Grid container style={{ paddingBottom: '0.5rem' }}>
                                         <Grid item xs={2}><EmailIcon /></Grid>
-<<<<<<< HEAD
                                         <Grid item xs={10} style={{paddingLeft:'0.5rem'}}>{selectTeacher.Teacher_Email}</Grid>
-=======
-                                        <Grid item xs={10}>{selectTeacher.Teacher_Email}</Grid>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                     </Grid>
                                 </a>}
                                 {String(selectTeacher.Teacher_Office).length !== 0 &&
                                 <Grid container style={{ paddingBottom: '0.5rem' }}>
                                     <Grid item xs={2}><LocationOnIcon /></Grid>
-<<<<<<< HEAD
                                     <Grid item xs={10} style={{paddingLeft:'0.5rem'}}>{selectTeacher.Teacher_Office}</Grid>
-=======
-                                    <Grid item xs={10}>{selectTeacher.Teacher_Office}</Grid>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 </Grid>}
                                 {String(selectTeacher.Teacher_LineId).length !== 0 &&
                                 <Grid container style={{ paddingBottom: '0.5rem' }}>
                                     <Grid item xs={2}><img alt='hok1' style={{ height: '1.8rem', width: '1.8rem' }} src="https://img.icons8.com/color/144/000000/line-me.png" /></Grid>
-<<<<<<< HEAD
                                     <Grid item xs={10} style={{paddingLeft:'0.5rem'}}>{selectTeacher.Teacher_LineId}</Grid>
-=======
-                                    <Grid item xs={10}>{selectTeacher.Teacher_LineId}</Grid>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 </Grid>}
                                 {selectTeacher.Teacher_Facebook !== null &&
                                 <Grid container style={{ paddingBottom: '0.5rem' }}>
                                     <Grid item xs={2}><img alt='hok2' style={{ height: '1.8rem', width: '1.8rem' }} src="https://img.icons8.com/fluency/144/000000/facebook-new.png" /></Grid>
-<<<<<<< HEAD
                                     <Grid item xs={10} style={{paddingLeft:'0.5rem'}}>{selectTeacher.Teacher_Facebook}</Grid>
-=======
-                                    <Grid item xs={10}>{selectTeacher.Teacher_Facebook}</Grid>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                 </Grid>}
                             </Grid>
                         </Grid>

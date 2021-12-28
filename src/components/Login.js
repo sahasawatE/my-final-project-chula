@@ -6,11 +6,8 @@ import axios from "axios";
 import '../App.css'
 import {AccountCircle} from '@material-ui/icons';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
-<<<<<<< HEAD
 import logo from '../bgImg/image 9.png'
 import { blue } from "@mui/material/colors";
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 require('dotenv').config()
 
 export default function Login(){
@@ -19,14 +16,11 @@ export default function Login(){
 
     const userInputRef = react.useRef(null);
     const submitLogin = react.useRef(null);
-<<<<<<< HEAD
 
     const [show, setShow] = react.useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 
     // const {student,setStudent} = react.useContext(userContext);
     const [token,setToken] = react.useState(null);
@@ -74,7 +68,6 @@ export default function Login(){
     return(
         <div className='loginContainer'>
             <div className='login'>
-<<<<<<< HEAD
                 <Grid container justifyContent='space-around'>
                     <Grid item xs={5}>
                         <img src={logo} alt='school logo' style={{height:'55vh',width:'40vw',marginTop:'-2.5rem'}} />
@@ -108,31 +101,6 @@ export default function Login(){
                             </Grid>
                             <div style={{ marginTop: '16px', width: '100%', justifyContent: 'center', display: 'flex', paddingBottom: '0.5rem' }}><Link href="#" underline="hover" onClick={handleShow}>ลืมรหัสผ่าน</Link></div>
                         </div>
-=======
-                <div className='loginlogo'></div>
-                <Grid container spacing={1} justifyContent="center" className='loginBox'>
-                    <div>
-                        <h2 style={{color:'#1B5ABC'}}>ยินดีต้อนรับเข้าสู่ระบบ</h2>
-                    </div>
-                    <Grid container>
-                        <Grid item xs={2} style={{marginTop:'4vh'}}>
-                            <AccountCircle style={{ fontSize: 36 }}/>
-                        </Grid>
-                        <Grid item xs={10}>
-                            <TextField inputRef={userInputRef} style={{marginTop:'16px',width:'100%'}} label="เลขประจำตัว" type='text' value={userId} onKeyPress={(e) => e.key === 'Enter' && submitLogin?.current.click()} onChange={stidhandle}/>
-                        </Grid>
-                    </Grid>
-                    <Grid container>
-                        <Grid item xs={2} style={{ marginTop: '4vh' }}>
-                            <VpnKeyIcon style={{ fontSize: 36 }}/>
-                        </Grid>
-                        <Grid item xs={10}>
-                            <TextField style={{ marginTop: '16px', width: '100%' }} label="รหัสผ่าน" type='password' value={userPassword} onChange={stpwhandle} onKeyPress={(e) => e.key === 'Enter' && submitLogin?.current.click()}/>
-                        </Grid>
-                    </Grid>
-                    <Grid container>
-                        <Button ref={submitLogin} style={{marginTop:'16px',backgroundColor:'#1B5ABC',color:'white',width:'100%'}} variant="contained" onClick={submit}><b>เข้าสู่ระบบ</b></Button>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     </Grid>
                 </Grid>
             </div>

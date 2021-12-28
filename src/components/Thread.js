@@ -217,10 +217,6 @@ export default function Thread() {
             }).then(res1 => {
                 setThread(res1.data[0]);
                 setReply(res1.data[1]);
-<<<<<<< HEAD
-=======
-                // console.log(res.data[1][0])
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                 setAnswer('');
                 setA('');
             })

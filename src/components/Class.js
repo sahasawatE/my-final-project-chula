@@ -211,13 +211,8 @@ export default function Class({ forwardedRef }) {
                 </Modal.Body>
                 <Modal.Footer>
                     <Grid container justifyContent='space-between'>
-<<<<<<< HEAD
                         <Button color='error' onClick={ () => setConfirm(false)}>ปิด</Button>
                         <Button>ตกลง</Button>
-=======
-                        <Button>1</Button>
-                        <Button>2</Button>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     </Grid>
                 </Modal.Footer>
             </Modal>
