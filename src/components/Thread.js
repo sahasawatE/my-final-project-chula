@@ -11,6 +11,7 @@ import ThreadReply from './ThreadReply';
 import SendIcon from '@mui/icons-material/Send';
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
+import '../App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'filepond/dist/filepond.min.css';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
@@ -172,7 +173,6 @@ export default function Thread() {
         setThreadF([]);
         setImgBlob([]);
     }
-
     function ansTreadImg(fileList,ans){
         if(user.Teacher_id){
             sendMsgAndImg(fileList, ans,null,user.Teacher_id,threadData.Subject_id,threadData.Thread_id,threadData.Room_id)
@@ -188,6 +188,15 @@ export default function Thread() {
             setThreadF([]);
             setImgBlob([]);
             setA(res.data);
+        })
+        .then(() => {
+            api.post('/subject/pushNotification',{
+                detail: `${user.Teacher_id ? user.Teacher_id : user.Student_id} ตอบกระทู้`,
+                Student_id: user.Teacher_id ? '' : user.Student_id,
+                Teacher_id: user.Teacher_id ? user.Teacher_id : '',
+                Room_id: threadData.Room_id,
+                Subject_id: threadData.Subject_id
+            }).catch(err => console.log(err))
         })
         .catch(err => console.log(err))
     }
@@ -208,7 +217,10 @@ export default function Thread() {
             }).then(res1 => {
                 setThread(res1.data[0]);
                 setReply(res1.data[1]);
+<<<<<<< HEAD
+=======
                 // console.log(res.data[1][0])
+>>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                 setAnswer('');
                 setA('');
             })
@@ -328,7 +340,7 @@ export default function Thread() {
                 </Grid>
 
                 <div>
-                    <Modal centered backdrop="static" show={postModal} onHide={() => {
+                    <Modal centered backdropClassName="modal" backdrop="static" show={postModal} onHide={() => {
                         setPostModal(false);
                         setTitle('');
                         setQ('');
@@ -411,7 +423,7 @@ export default function Thread() {
                 </div>
                 {threadData ? 
                 <div>
-                    <Modal centered show={showThread} backdrop="static" size="lg" aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+                    <Modal centered backdropClassName="modal" show={showThread} backdrop="static" size="lg" aria-labelledby="contained-modal-title-vcenter" onHide={() => {
                         setAnswer('');
                         setShowThread(false);
                         setReadMore(false);
@@ -566,7 +578,7 @@ export default function Thread() {
             }
 
             {/* img modal */}
-            <Modal centered show={selectBlob !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+            <Modal centered backdropClassName="modal" show={selectBlob !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
                 if(mode === 1){
                     setSelectBlob(null);
                     setPostModal(true);
@@ -586,7 +598,7 @@ export default function Thread() {
             </Modal>
 
             {/* img reply modal */}
-            <Modal centered show={selectImgReply !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+            <Modal centered backdropClassName="modal" show={selectImgReply !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
                 setSelectImgReply(null);
                 setShowThread(true);
             }}>
@@ -594,7 +606,7 @@ export default function Thread() {
             </Modal>
 
             {/* img thread modal */}
-            <Modal centered show={selectThreadImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
+            <Modal centered backdropClassName="modal" show={selectThreadImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
                 setSelectThreadImg(null);
                 setShowThread(true);
             }}>
@@ -602,7 +614,7 @@ export default function Thread() {
             </Modal>
 
             {/* upload image modal */}
-            <Modal centered show={addImgModal} backdrop="static" aria-labelledby="contained-modal-title-vcenter">
+            <Modal centered backdropClassName="modal" show={addImgModal} backdrop="static" aria-labelledby="contained-modal-title-vcenter">
                 <Modal.Header>อัพโหลดรูป</Modal.Header>
                 <Modal.Body>
                     <Grid container style={{maxHeight:'55vh',overflow:'scroll'}}>

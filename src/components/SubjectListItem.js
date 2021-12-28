@@ -38,7 +38,7 @@ export default function SubjectListItem(props){
                     room: props.value.roomId
                 })} 
                 style={selectSubject ?
-                    selectSubject.name === props.value.subjectId && selectSubject.room === props.value.roomId ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius: '0.5rem'} : null
+                    selectSubject.name === props.value.subjectId && selectSubject.room === props.value.roomId ? { backgroundColor: "rgba(107, 158, 255, 0.5)", borderRadius: '0.5rem'} : null
                 :
                 null}>
                 <ListItemText

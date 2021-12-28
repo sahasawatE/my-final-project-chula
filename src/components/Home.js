@@ -18,9 +18,12 @@ import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import '../App.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { IconButton } from '@mui/material';
+import { IconButton, Accordion,AccordionDetails,AccordionSummary } from '@mui/material';
+import { blue, yellow } from '@mui/material/colors';
 
 const useStyles = makeStyles((theme) => ({
     paperRight: {
@@ -83,7 +86,12 @@ export default function Home(props,{ forwardedRef }) {
                 Room_id: selectSubject.room
             }).then(res => setSelectSubjectName(res.data[0].Subject_name)).catch(err => console.log(err))
         }
+        if(user.Teacher_id){
+            getLink(selectSubject.room)
+        }
     },[selectSubject,setSelectSubject])
+
+    const [link, setLink] = react.useState('')
 
     function getSubjectTime(){
         api.post('/subject/subjectTime',{
@@ -109,9 +117,16 @@ export default function Home(props,{ forwardedRef }) {
         }).then(res => setQueryTeacher(res.data[0])).catch(err => console.log(err))
     }
 
+    function getLink(room){
+        api.post('/askRoom',{
+            Room_id: room
+        }).then(res => setLink(res.data[0].Link)).catch(err => console.log(err))
+    }
+
     react.useEffect(() => {
         if(user.Student_id){
             TeacherRoom(user.Room_id)
+            getLink(user.Room_id)
             getSubjectTime()
         }
         else if(user.Teacher_id){
@@ -119,30 +134,34 @@ export default function Home(props,{ forwardedRef }) {
         }
     },[user]);
 
-    const mon = [];
-    const tus = [];
-    const wen = [];
-    const thu = [];
-    const fri = [];
+    const [mon,setMon] = react.useState([]);
+    const [tus, setTus] = react.useState([]);
+    const [wen, setWen] = react.useState([]);
+    const [thu, setThu] = react.useState([]);
+    const [fri, setFri] = react.useState([]);
 
-    return (
-        <div ref={forwardedRef} className="App">
-            <br/><br/>
-            {subject.map((value) => {
+    react.useEffect(() => {
+        if(subject){
+            var m = []
+            var t = []
+            var w = []
+            var th = []
+            var f = []
+            subject.map((value) => {
                 const data = [value.date.split(','), value.Time_start.split(','), value.Time_end.split(',')];
-                for(let i = 0; i < data[0].length; i++){
+                for (let i = 0; i < data[0].length; i++) {
                     // console.log(value.Subject_id,data[0][i], data[1][i], data[2][i])
-                    if(data[0][i] === "จันทร์"){
-                        mon.push({
-                            subject : value.Subject_id,
-                            start : data[1][i],
-                            end : data[2][i],
-                            day : data[0][i],
-                            room : value.Room_id
+                    if (data[0][i] === "จันทร์") {
+                        m.push({
+                            subject: value.Subject_id,
+                            start: data[1][i],
+                            end: data[2][i],
+                            day: data[0][i],
+                            room: value.Room_id
                         });
                     }
                     if (data[0][i] === "อังคาร") {
-                        tus.push({
+                        t.push({
                             subject: value.Subject_id,
                             start: data[1][i],
                             end: data[2][i],
@@ -151,7 +170,7 @@ export default function Home(props,{ forwardedRef }) {
                         });
                     }
                     if (data[0][i] === "พุธ") {
-                        wen.push({
+                        w.push({
                             subject: value.Subject_id,
                             start: data[1][i],
                             end: data[2][i],
@@ -160,7 +179,7 @@ export default function Home(props,{ forwardedRef }) {
                         });
                     }
                     if (data[0][i] === "พฤหัสบดี") {
-                        thu.push({
+                        th.push({
                             subject: value.Subject_id,
                             start: data[1][i],
                             end: data[2][i],
@@ -169,7 +188,7 @@ export default function Home(props,{ forwardedRef }) {
                         });
                     }
                     if (data[0][i] === "ศุกร์") {
-                        fri.push({
+                        f.push({
                             subject: value.Subject_id,
                             start: data[1][i],
                             end: data[2][i],
@@ -179,13 +198,26 @@ export default function Home(props,{ forwardedRef }) {
                     }
                 }
                 return null;
-            })}
-            <div style={{display:'flex', width:'40%',marginLeft:'8vw',paddingBottom:'1rem'}}>
-                <Typography>{selectSubjectName}</Typography>
+            })
+            setMon(m)
+            setTus(t)
+            setWen(w)
+            setThu(th)
+            setFri(f)
+        }
+    },[subject])
+
+    return (
+        <div ref={forwardedRef} className="App" >
+            <br/><br/>
+            {selectSubjectName && 
+            <div className={user.Student_id ? 'studentBanner' : 'teacherBanner'} style={{ backgroundColor:'#fff', width: '40vw', height:'10vh', marginLeft: '8vw', marginBottom:'1rem', borderRadius:'16px'}}>
+                <Typography style={{ display: 'flex', justifyContent:'center', paddingTop:'4.5%'}} variant='h5'>{selectSubjectName}</Typography>
             </div>
+            }
             <Grid container justifyContent="center" alignItems="center" direction="row">
                 <Grid item className='timetable' xs={7}>
-                    <Paper className={classes.paperLeft}>
+                    <Paper className={classes.paperLeft} style={{borderRadius:'16px'}}>
                         <Grid direction="column" container>
                             <Grid style={{ height: '9vh' }} container direction="row">
                                 <Grid item xs={2}>
@@ -245,17 +277,17 @@ export default function Home(props,{ forwardedRef }) {
                                 </Grid>
                             </Grid>
                             <subjectContext.Provider value={{selectSubject,setSelectSubject}}>
-                                <DaySub day='จ.' data={mon}/>
-                                <DaySub day='อ.' data={tus} />
-                                <DaySub day='พ.' data={wen} />
-                                <DaySub day='พฤ.' data={thu} />
-                                <DaySub day='ศ.' data={fri} />
+                                <DaySub day='จ.' data={mon} user={user} />
+                                <DaySub day='อ.' data={tus} user={user} />
+                                <DaySub day='พ.' data={wen} user={user} />
+                                <DaySub day='พฤ.' data={thu} user={user} />
+                                <DaySub day='ศ.' data={fri} user={user} />
                             </subjectContext.Provider>
                         </Grid>
                     </Paper>
                 </Grid>
                 <Grid item className='timetable' xs={3}>
-                    <Paper className={classes.paperRight}>
+                    <Paper className={classes.paperRight} style={{borderRadius:'16px'}}>
                         <subjectContext.Provider value={{ selectSubject, setSelectSubject }}>
                             <SubjectList user={user.Teacher_id ? user.Teacher_id : ''} roomId={user.Teacher_id ? '' : user.Room_id} />
                         </subjectContext.Provider>
@@ -266,19 +298,19 @@ export default function Home(props,{ forwardedRef }) {
                 <Grid item xs={6}>
                     {/* query a study link */}
                     <div className={classes.paperLeftBottom}>
-                        <Paper style={{ marginBottom: '2vh', height: '2.2rem'}}>
+                        <Paper style={{ marginBottom: '2vh', height: '2.2rem', borderRadius:'16px'}}>
                             <Grid container>
                                 <Grid item xs={3} style={{ marginTop: '0.35rem', display: 'flex', justifyContent: 'center'}}>
                                     <Typography>ลิ้งค์ห้องเรียน : </Typography>
                                 </Grid>
                                 <Grid item xs={9} zeroMinWidth style={{ marginTop: '0.35rem', display: 'flex', justifyContent: 'flex-start'}}>
-                                    <Link noWrap href="https://www.youtube.com/watch?v=GG7fLOmlhYg" target={'_blank'} underline="hover">
-                                        <Typography>https://www.youtube.com/watch?v=GG7fLOmlhYg</Typography>
+                                    <Link noWrap href={link} target={'_blank'} underline="hover">
+                                        <Typography>{link}</Typography>
                                     </Link>
                                 </Grid>
                             </Grid>
                         </Paper>
-                        <Paper>
+                        <Paper style={{ borderRadius: '16px'}}>
                             <Grid container justifyContent="center" direction="column">
                                 <SubjectDocs teacher={user.Teacher_id} room={user.Room_id} selectedSubject={selectSubject} />
                             </Grid>
@@ -290,7 +322,7 @@ export default function Home(props,{ forwardedRef }) {
                         {user.Teacher_id ? 
                             <Paper style={{ marginBottom: '2vh', backgroundColor: '#1B4E9C' }}>
                                 <Grid container justifyContent="center" direction="column">
-                                    <Button style={{ width: '100%', color: 'white' }} onClick={() => {
+                                    <Button style={{ width: '100%', backgroundColor: yellow[600], borderRadius: '16px' }} onClick={() => {
                                         if(selectSubject){
                                             api.post('/teacher/allStudents', {
                                                 Room_id: selectSubject.room
@@ -311,34 +343,38 @@ export default function Home(props,{ forwardedRef }) {
                                             alert('กรุณาเลือกวิชาที่จะแสดง')
                                         }
                                     }}>
-                                        <b style={{ color: 'white' }}>รายชื่อนักเรียน</b>
+                                        <b style={{ color: blue[800] }}>รายชื่อนักเรียน</b>
                                     </Button>
                                 </Grid>
                             </Paper>
                             :
-                            <Paper style={{ marginBottom: '2vh' }}>
-                                <Grid container justifyContent="center" direction="column">
-                                    <b style={{ color: '#4171B9', padding: '0.5rem' }}>ครูประจำชั้น</b>
+                            <Accordion style={{ marginBottom: '2vh', borderRadius:'16px' }}>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMoreIcon />}
+                                    aria-controls="panel1a-content"
+                                    id="panel1a-header"
+                                >
+                                    <Typography><b style={{ color: '#4171B9', padding: '0.5rem' }}>ครูประจำชั้น</b></Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
                                     <div>
                                         <Grid style={{ maxWidth: '33.35vw' }} container direction="row" wrap="nowrap">
                                             <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center' }}>
                                                 <PersonIcon fontSize="large" />
                                             </Grid>
-                                            {queryTeacher ?
+                                            {queryTeacher &&
                                                 <Grid item xs={10} zeroMinWidth style={{ display: 'flex', flexDirection: 'column' }}>
                                                     <Typography noWrap>{queryTeacher.Teacher_FristName} {queryTeacher.Teacher_LastName}</Typography>
-                                                    <Typography noWrap>{queryTeacher.Teacher_Phone}</Typography>
-                                                    <Typography noWrap>{queryTeacher.Teacher_Email}</Typography>
+                                                    <Typography noWrap><a href={`tel:${queryTeacher.Teacher_Phone}`}>{queryTeacher.Teacher_Phone}</a></Typography>
+                                                    <Typography noWrap><a href={`mailto:${queryTeacher.Teacher_Email}`} target="_blank" rel="noreferrer">{queryTeacher.Teacher_Email}</a></Typography>
                                                 </Grid>
-                                                :
-                                                null
                                             }
                                         </Grid>
                                     </div>
-                                </Grid>
-                            </Paper>
+                                </AccordionDetails>
+                            </Accordion>
                         }
-                        <Paper>
+                        <Paper style={{borderRadius:'16px'}}>
                             <Grid container justifyContent="center" direction="column">
                                 <Thread/>
                                 {/* <Hok/> */}
@@ -350,7 +386,7 @@ export default function Home(props,{ forwardedRef }) {
 
             {/* students modal */}
             <div>
-                <Modal show={openStudentList} size="lg" aria-labelledby="contained-modal-title-vcenter" centered onHide={() => {
+                <Modal show={openStudentList} size="lg" aria-labelledby="contained-modal-title-vcenter" centered backdropClassName="modal" onHide={() => {
                     setOpenStudentList(false);
                     setSelectStudent(null);
                     setSearchStudent([]);
@@ -366,7 +402,7 @@ export default function Home(props,{ forwardedRef }) {
                                         :
                                         <Grid container direction='column'>
                                             <Grid item xs={12}>
-                                                <Paper component="form" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', backgroundColor: '#ffffff' }}>
+                                                <Paper elevation={6} component="form" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', backgroundColor: '#ffffff', borderRadius: '16px' }}>
                                                     <SearchIcon/>
                                                     <InputBase
                                                         style={{ flex: 1, width:'100%' }}
