@@ -247,11 +247,7 @@ export default function Works(props) {
 
                 {/* hideModal */}
                 <div>
-<<<<<<< HEAD
                     <Modal centered backdrop="static" backdropClassName="modal" show={hideWorkModal}>
-=======
-                    <Modal centered backdrop="static" show={hideWorkModal}>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             คุณต้องการที่จะปิดการมองเห็นเนื้อหานี้หรือไม่ ?
                         </Modal.Body>
@@ -276,11 +272,7 @@ export default function Works(props) {
 
                 {/* un-hideModal */}
                 <div>
-<<<<<<< HEAD
                     <Modal centered backdrop="static" backdropClassName="modal" show={unHideWorkModal}>
-=======
-                    <Modal centered backdrop="static" show={unHideWorkModal}>
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
                             คุณต้องการที่จะเปิดการมองเห็นเนื้อหานี้หรือไม่ ?
                         </Modal.Body>
@@ -332,11 +324,7 @@ export default function Works(props) {
                                                 <div style={{width:'70%'}}>
                                                     <Form.Group>
                                                         <Form.Label>กำหนดส่ง</Form.Label>
-<<<<<<< HEAD
                                                             <Form.Control type='datetime-local' disabled />
-=======
-                                                            <Form.Control type='datetime-local' disabled onChange={(e) => setWorkDeadline(e.target.value)} />
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                     </Form.Group>
                                                 </div>
                                                 <div style={{ width: '25%' }} >
@@ -415,11 +403,7 @@ export default function Works(props) {
                                                     }).then(console.log('deleted')).catch(err => console.log(err))
                                                 }}
                                                 server={{
-<<<<<<< HEAD
                                                     process : `${ngrok}teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
-=======
-                                                    process : `${ngrok}/teacher/uploadWorkFiles/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${workName}`,
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                     revert: null
                                                 }}
                                                 labelIdle='ลากและวาง PDF ของคุณที่นี่ หรือ <span class="filepond--label-action">เลือก</span> สูงสุด 3 ไฟล์'
@@ -460,11 +444,7 @@ export default function Works(props) {
                 </div>
 
                 {/* img modal */}
-<<<<<<< HEAD
                 <Modal centered backdropClassName="modal" show={teacherSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
-=======
-                <Modal centered show={teacherSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     setTeacherSelectImg(null);
                     setTeacherWorkModal(true);
                 }}>
@@ -806,11 +786,7 @@ export default function Works(props) {
                                             credits={false}
                                             allowRevert
                                             server={{
-<<<<<<< HEAD
                                                 process: `${ngrok}student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
-=======
-                                                process: `${ngrok}/student/uploadWorkFile/${props.subject.Subject_id}/${props.user.Student_id}/${props.subject.Room_id}/${selectWork.Work_Name}`,
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 revert: null
                                             }}
                                             onprocessfiles={async () => {
@@ -967,11 +943,7 @@ export default function Works(props) {
                 </div>
 
                 {/* img modal */}
-<<<<<<< HEAD
                 <Modal backdropClassName="modal" centered show={studentSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
-=======
-                <Modal centered show={studentSelectImg !== null} aria-labelledby="contained-modal-title-vcenter" onHide={() => {
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                     setStudentSelectImg(null);
                     setStudentOpenWork(true);
                 }}>

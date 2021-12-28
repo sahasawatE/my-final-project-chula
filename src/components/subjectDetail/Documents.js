@@ -235,11 +235,7 @@ export default function Documents(props){
                                                 <ListItemButton onClick={() => {
                                                         getFile(value.File_Path.split('/').at(-1));
                                                 }}>
-<<<<<<< HEAD
                                                     <InsertDriveFileIcon style={{color:blue[800]}}/>
-=======
-                                                    <InsertDriveFileIcon />
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                     <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('/').at(-1)}</ListItemText>
                                                 </ListItemButton>
                                             </ListItem>
@@ -262,11 +258,7 @@ export default function Documents(props){
                                                     <ListItemButton onClick={() => {
                                                         enterF(value.split('/').at(-1))
                                                     }}>
-<<<<<<< HEAD
                                                         <FolderIcon style={{color:grey[600]}}/>
-=======
-                                                        <FolderIcon />
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
                                                     </ListItemButton>
                                                 </ListItem>
@@ -329,11 +321,7 @@ export default function Documents(props){
                                                     allowRevert
                                                     // allowRemove={false}
                                                     server={props.subject && {
-<<<<<<< HEAD
                                                         process: `${ngrok}teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
-=======
-                                                        process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${newFolderName}`,
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         revert: null
                                                     }}
                                                     name="file"
@@ -385,11 +373,7 @@ export default function Documents(props){
                                             allowDrop
                                             // allowRemove={false}
                                             server={props.subject && {
-<<<<<<< HEAD
                                                 process: `${ngrok}teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
-=======
-                                                process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/noFolder`,
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 revert: null
                                             }}
                                             name="file"
@@ -525,11 +509,7 @@ export default function Documents(props){
                                             allowDrop
                                             allowRevert
                                             server={props.subject && {
-<<<<<<< HEAD
                                                 process: `${ngrok}teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
-=======
-                                                process: `${ngrok}/teacher/uploadFile/${props.subject.Subject_id}/${props.user.Teacher_id}/${props.subject.Room_id}/${selectFolder}`,
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                 revert: null
                                             }}
                                             name="file"
@@ -606,11 +586,7 @@ export default function Documents(props){
                                                     <ListItemButton onClick={() => {
                                                         getFile(value.File_Path.split('\\').pop().split('/').pop())
                                                     }}>
-<<<<<<< HEAD
                                                         <InsertDriveFileIcon  style={{color:blue[800]}}/>
-=======
-                                                        <InsertDriveFileIcon />
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                                                         <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
                                                     </ListItemButton>
                                                 </ListItem>

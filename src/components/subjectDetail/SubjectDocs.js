@@ -71,15 +71,12 @@ export default function SubjectDocs(props){
     const [subject,setSubject] = React.useState(null)
     const [roomClass,setRoomClass] = React.useState(null)
 
-<<<<<<< HEAD
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
 
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
     React.useEffect(() => {
         if (teacherId && selectedSubject){
             axios.post(`${ngrok}teacher/subject`, {
@@ -96,11 +93,7 @@ export default function SubjectDocs(props){
             }).catch(error => console.log(error))
         }
         if (room && selectedSubject){
-<<<<<<< HEAD
             axios.post(`${ngrok}subject/subjectDetail`, {
-=======
-            axios.post(`${ngrok}/subject/subjectDetail`, {
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
                 Subject_id: selectedSubject.name,
                 Room_id: room
             }).then(result => {
