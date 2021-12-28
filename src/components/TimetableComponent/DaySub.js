@@ -31,6 +31,7 @@ export default function DaySub(props) {
             {/* {JSON.stringify(subject)} */}
             {subject.map((value, index) => {
                 return <SubjectBlock
+                    user={props.user}
                     room={value.room}
                     key={index}
                     day={value.day}
