@@ -3,11 +3,8 @@ import axios from 'axios';
 import { List, ListItem, Paper, InputBase, IconButton } from '@mui/material';
 import {grey} from '@mui/material/colors'
 import SubjectListItem from './SubjectListItem';
-<<<<<<< HEAD
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-=======
->>>>>>> 999d8ec025d1423aab99129a49da7faed60ad8f8
 require('dotenv').config()
 
 export default function SubjectList(props) {
