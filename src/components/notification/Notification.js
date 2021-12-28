@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-export default function Notification(props) {
+export default function Notification(props, { forwardedRef}) {
     const [filterDate, setFilterDate] = react.useState([]);
     const classes = useStyles();
     const noti = props.noti;
@@ -57,11 +57,11 @@ export default function Notification(props) {
     }
     // filterDate.map(v => console.log(today === v))
     return (
-        <Grid container direction="column">
+        <Grid container direction="column" innerRef={forwardedRef}>
             <b style={{ color: '#4171B9', padding: '1rem' }}>แจ้งเตือน</b>
             <List className={classes.root} sx={{
                 width: '100%',
-                maxWidth: 360,
+                maxWidth: 260,
                 bgcolor: 'background.paper',
                 position: 'relative',
                 overflow: 'auto',
