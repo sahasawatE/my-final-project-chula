@@ -653,7 +653,7 @@ export default function Thread() {
                                                 })
                                             })
                                             .then(setFiles(files.filter(e => e.file !== f.file)))
-                                            .then(setThreadF(threadF.filter(e => e.File_Path !== `/Users/yen/Desktop/FinalProject/component/final/src/components/ThreadFile/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}/${f.file.name}`)))
+                                            .then(setThreadF(threadF.filter(e => e.File_Path !== `/home/tkschool/Files/ThreadFile/${selectSubject.room}/${selectSubject.name}/${user.Student_id ? user.Student_id : user.Teacher_id}/${threadData ? threadData.Thread_id : ''}/${f.file.name}`)))
                                             .catch(err => console.log(err))
                                     }
                                 }}
