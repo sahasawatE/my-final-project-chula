@@ -1,5 +1,10 @@
 import * as react from 'react';
 import {BrowserRouter as Router, Switch,Route,Redirect} from 'react-router-dom';
+import MobileLogin from './components/mobile/mobileLogin';
+import MobileAppBar from './components/mobile/mobileAppBar';
+import MobileHome from './components/mobile/mobileHome';
+import MobileStudentList from './components/mobile/mobileStudentList';
+import {useMediaQuery} from '@mui/material'
 import Appbar from './components/Appbar';
 import {userContext} from './userContext';
 import Home from './components/Home'
@@ -17,6 +22,7 @@ import BGStudent from './bgImg/Yellow-Student.jpeg'
 require('dotenv').config()
 
 export default function App() {
+  const mobile = useMediaQuery('(min-width:600px)');
   const ngrok = process.env.REACT_APP_NGROK_URL;
   const api = axios.create({ baseURL: ngrok })
 
@@ -50,58 +56,103 @@ export default function App() {
     }
   },[])
 
-  return(
-    <div className='main' style={{ backgroundImage: user.Student_id ? `url(${BGStudent})` : `url(${BGTeacher})`, backgroundColor: '#fff', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed', backgroundSize: '100% 100%',overflow:'scroll',backgroundPosition:'0px 4rem' }}>
-    <Router>
-      <userContext.Provider value={{user,setUser}}>
-      <selectSubjectContext.Provider value={{selectSubject,setSelectSubject}}>
-      <socketContext.Provider value={{socket}}>
-        <Appbar/>
-        <Switch>
-          <Route exact path="/login">
-            {localStorage.getItem('auth-token') ? 
-            <Redirect to='/home'/>
-          :
-          <Login/>
-          }
-            
-          </Route>
-          <Route exact path='/home'>
-            <Home forwardedRef={homeRef}/>
-            {/* {localStorage.getItem('auth-token') ? 
+  if(mobile){
+    return (
+      <div className='main' style={{ backgroundImage: user.Student_id ? `url(${BGStudent})` : `url(${BGTeacher})`, backgroundColor: '#fff', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed', backgroundSize: '100% 100%', overflow: 'scroll', backgroundPosition: '0px 4rem' }}>
+        <Router>
+          <userContext.Provider value={{ user, setUser }}>
+            <selectSubjectContext.Provider value={{ selectSubject, setSelectSubject }}>
+              <socketContext.Provider value={{ socket }}>
+                <Appbar />
+                <Switch>
+                  <Route exact path="/login">
+                    {localStorage.getItem('auth-token') ?
+                      <Redirect to='/home' />
+                      :
+                      <Login />
+                    }
+
+                  </Route>
+                  <Route exact path='/home'>
+                    <Home forwardedRef={homeRef} />
+                    {/* {localStorage.getItem('auth-token') ? 
             :
             <Redirect to='/login'/>
             } */}
-          </Route>
-          <Route exact path='/studentWork'>
-            <Class forwardedRef={classRef}/>
-            {/* {localStorage.getItem('auth-token') ? 
+                  </Route>
+                  <Route exact path='/studentWork'>
+                    <Class forwardedRef={classRef} />
+                    {/* {localStorage.getItem('auth-token') ? 
             :
             <Redirect to='/login'/>
             } */}
-          </Route>
-          <Route exact path='/school'>
-            <School forwardedRef={schoolRef}/>
-            {/* {localStorage.getItem('auth-token') ? 
+                  </Route>
+                  <Route exact path='/school'>
+                    <School forwardedRef={schoolRef} />
+                    {/* {localStorage.getItem('auth-token') ? 
             :
             <Redirect to='/login'/>
             } */}
-          </Route>
-          <Route exact path='/parent'>
-            <Parent forwardedRef={parentRef}/>
-            {/* {localStorage.getItem('auth-token') ? 
+                  </Route>
+                  <Route exact path='/parent'>
+                    <Parent forwardedRef={parentRef} />
+                    {/* {localStorage.getItem('auth-token') ? 
             :
             <Redirect to='/login'/>
             } */}
-          </Route>
-          <Route path='*'>
-          {localStorage.getItem('auth-token') ? <Redirect to='/home'/> : <Redirect to='/login'/>}
-          </Route>
-        </Switch>
-      </socketContext.Provider>
-      </selectSubjectContext.Provider>
-      </userContext.Provider>
-    </Router>
-    </div>
-  );
+                  </Route>
+                  <Route path='*'>
+                    {localStorage.getItem('auth-token') ? <Redirect to='/home' /> : <Redirect to='/login' />}
+                  </Route>
+                </Switch>
+              </socketContext.Provider>
+            </selectSubjectContext.Provider>
+          </userContext.Provider>
+        </Router>
+      </div>
+    );
+  }
+  else{
+    return(
+      <div className='main' style={{ backgroundImage: user.Student_id ? `url(${BGStudent})` : `url(${BGTeacher})`, backgroundColor: '#fff', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed', backgroundSize: '100% 100%', overflow: 'scroll' }}>
+        <Router>
+          <userContext.Provider value={{ user, setUser }}>
+            <selectSubjectContext.Provider value={{ selectSubject, setSelectSubject }}>
+              <socketContext.Provider value={{ socket }}>
+                <MobileAppBar />
+                <Switch>
+                  <Route exact path="/login">
+                    {localStorage.getItem('auth-token') ?
+                      <Redirect to='/home' />
+                      :
+                      <MobileLogin />
+                    }
+
+                  </Route>
+                  <Route exact path='/home'>
+                    <MobileHome forwardedRef={homeRef} />
+                  </Route>
+                  <Route exact path='/studentWork'>
+                    <Class forwardedRef={classRef} />
+                  </Route>
+                  <Route exact path='/school'>
+                    <School forwardedRef={schoolRef} />
+                  </Route>
+                  <Route exact path='/parent'>
+                    <Parent forwardedRef={parentRef} />
+                  </Route>
+                  <Route exact path='/studentList'>
+                    <MobileStudentList />
+                  </Route>
+                  <Route path='*'>
+                    {localStorage.getItem('auth-token') ? <Redirect to='/home' /> : <Redirect to='/login' />}
+                  </Route>
+                </Switch>
+              </socketContext.Provider>
+            </selectSubjectContext.Provider>
+          </userContext.Provider>
+        </Router>
+      </div>
+    )
+  }
 }
