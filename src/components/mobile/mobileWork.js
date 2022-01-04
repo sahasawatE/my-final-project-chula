@@ -538,20 +538,21 @@ export default function MobileWorks(props) {
                                     setViewWorkSubmit(false);
                                 }}>ปิด</Button>
                                 <Button variant="outlined" color="primary" onClick={() => {
-                                    api.post('/teacher/checkWork', {
-                                        Room_id: props.subject.Room_id,
-                                        Teacher_id: props.user.Teacher_id,
-                                        Subject_id: props.subject.Subject_id,
-                                        Work_Name: selectWork.Work_Name
-                                    })
-                                        .then(res => {
-                                            setSubmittedStudent(res.data)
-                                        })
-                                        .then(() => {
-                                            setViewWorkSubmit(true);
-                                            setTeacherWorkModal(false);
-                                        })
-                                        .catch(err => console.log(err))
+                                    console.log(props)
+                                    // api.post('/teacher/checkWork', {
+                                    //     Room_id: props.subject.Room_id,
+                                    //     Teacher_id: props.user.Teacher_id,
+                                    //     Subject_id: props.subject.Subject_id,
+                                    //     Work_Name: selectWork.Work_Name
+                                    // })
+                                    //     .then(res => {
+                                    //         setSubmittedStudent(res.data)
+                                    //     })
+                                    //     .then(() => {
+                                    //         setViewWorkSubmit(true);
+                                    //         setTeacherWorkModal(false);
+                                    //     })
+                                    //     .catch(err => console.log(err))
                                 }}>ดูการส่งงาน</Button>
                             </Modal.Footer>
                         </Modal>
