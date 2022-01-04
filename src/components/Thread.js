@@ -475,7 +475,7 @@ export default function Thread() {
                                 </Grid>
                                 <Grid item xs={6} style ={{width:'50%'}}>
                                     <Typography>คำตอบ</Typography>
-                                    <div style={{maxHeight:'36vh', overflow:'scroll'}} ref={commentSection}>
+                                    <div style={{height:'36vh', overflow:'scroll'}} ref={commentSection}>
                                     {reply || replyMsg ? 
                                     reply.concat(replyMsg).map((value,index) => {
                                         if(String(value.Reply_to) === String(threadData.Thread_id)){

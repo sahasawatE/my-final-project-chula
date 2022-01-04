@@ -2,18 +2,20 @@ import react from 'react';
 import { ListItemButton, ListItemText, Typography } from "@mui/material";
 import { subjectContext } from './subjectContext';
 
-export default function SubjectListItem(props){
+export default function SubjectListItem(props) {
 
     const { selectSubject, setSelectSubject } = react.useContext(subjectContext);
 
     if(props.user === 'teacher'){
         return (
             <ListItemButton 
-                onClick={() => setSelectSubject({
-                    name: props.value.subjectId,
-                    day: '',
-                    room: props.value.roomId
-                })} 
+                onClick={() => {
+                    setSelectSubject({
+                        name: props.value.subjectId,
+                        day: '',
+                        room: props.value.roomId
+                    });
+                }} 
                 style={selectSubject ?
                     selectSubject.name === props.value.subjectId && selectSubject.room === props.value.roomId ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius:'0.5rem' } : null
                 :
@@ -32,11 +34,13 @@ export default function SubjectListItem(props){
     else{
         return(
             <ListItemButton 
-                onClick={() => setSelectSubject({
-                    name: props.value.subjectId,
-                    day: '',
-                    room: props.value.roomId
-                })} 
+                onClick={() => {
+                    setSelectSubject({
+                        name: props.value.subjectId,
+                        day: '',
+                        room: props.value.roomId
+                    });
+                }} 
                 style={selectSubject ?
                     selectSubject.name === props.value.subjectId && selectSubject.room === props.value.roomId ? { backgroundColor: "rgba(107, 158, 255, 0.5)", borderRadius: '0.5rem'} : null
                 :

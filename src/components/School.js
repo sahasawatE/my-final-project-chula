@@ -1,9 +1,10 @@
 import react from 'react';
 import {ListItem} from '@material-ui/core'
-import { Grid, Paper, InputBase, Typography, styled, List, ListItemIcon, ListItemText,IconButton } from '@mui/material'
+import { Grid, Paper, InputBase, Typography, styled, List, ListItemIcon, ListItemText,IconButton, SwipeableDrawer, Box, Chip, Stack, Collapse, Alert } from '@mui/material'
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
+import { useMediaQuery } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -12,6 +13,8 @@ import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ClearIcon from '@mui/icons-material/Clear';
 import axios from 'axios';
+
+const drawerBleeding = 56;
 
 require('dotenv').config()
 
@@ -51,14 +54,22 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
     borderTop: '1px solid rgba(0, 0, 0, .125)',
 }));
 
-export default function School({forwardedRef}){
+export default function School(props,{ forwardedRef }) {
+    const { canva } = props;
+    const mobile = useMediaQuery('(min-width:600px)');
     const ngrok = process.env.REACT_APP_NGROK_URL;
     const api = axios.create({ baseURL: ngrok })
 
     const [selectTeacher, setSelectTeacher] = react.useState(null);
+    const [openAlert, setOpenAlert] = react.useState(false);
 
     const teacherSubject = ['ฝ่ายปกครอง','แนะแนว','คณิตศาสตร์','ภาษาไทย','ภาษาต่างประเทศ','วิทยาศาสตร์','สังคมศึกษา ศาสนาและวัฒนธรรม','สุขศึกษาและพละศึกษา','ศิลปะ','การงานอาชีพและเทคโนโลยี'];
-    const [listData, setListData] = react.useState([[],[],[],[],[],[],[],[],[],[]]);
+    const [listData, setListData] = react.useState([[], [], [], [], [], [], [], [], [], []]);
+    const container = canva !== undefined ? () => canva().document.body : undefined;
+    const [open, setOpen] = react.useState(false);
+    const toggleDrawer = (newOpen) => () => {
+        setOpen(newOpen);
+    };
 
     react.useEffect(() => {
         const data0 = [];
@@ -118,11 +129,15 @@ export default function School({forwardedRef}){
     const [searchString, setSearchString] = react.useState('');
     const [searchTeacher, setSearchTeacher] = react.useState([]);
 
+    react.useEffect(() => {
+        setTimeout(() => setOpenAlert(false),5000)
+    },[openAlert,setOpenAlert])
+
     return(
     <div ref={forwardedRef} className="App" style={{height:'71vh'}}>
         <Grid container direction='row' justifyContent='center'>
-            <Grid item xs={5} style={{height:'100%',marginTop:'2rem'}}>
-                <div style={{marginRight:'0.25rem',marginLeft:'0.75rem'}}>
+            <Grid item xs={mobile ? 5 : 12} style={{height:'100%',marginTop:'2rem'}}>
+                <div style={{marginRight:mobile ? '0.25rem' : '0.75rem',marginLeft:'0.75rem'}}>
                     <Paper component="form" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', width: '100%', backgroundColor: '#ffffff', borderRadius: '16px' }}>
                         <SearchIcon />
                         <InputBase
@@ -165,7 +180,7 @@ export default function School({forwardedRef}){
                         {searchTeacher.length !== 0 &&
                             <Grid container direction='column' style={{ zIndex: '100', position: 'absolute' }}>
                                 <Grid item xs={12}>
-                                    <Paper style={{ width: '40.5vw', marginTop: '0.1rem', maxHeight: '32vh', overflow: 'scroll', borderRadius: '16px' }}>
+                                    <Paper style={{ width: mobile ? '40.5vw' : '95vw', marginTop: '0.1rem', maxHeight: '32vh', overflow: 'scroll', borderRadius: '16px' }}>
                                         <div style={{ padding: '0.5rem' }}>
                                             <List>
                                                 {searchTeacher.length !== 0 &&
@@ -176,6 +191,9 @@ export default function School({forwardedRef}){
                                                                     setSelectTeacher(value)
                                                                     setSearchTeacher([])
                                                                     setExpanded(value.Major)
+                                                                    if(!mobile){
+                                                                        setOpen(true)
+                                                                    }
                                                                 }} key={`searchResultNO${index}`}>
                                                                     <ListItemIcon><AccountCircleIcon sx={{ fontSize: 40 }} /></ListItemIcon>
                                                                     <ListItemText primary={`${value?.Teacher_FirstName} ${value?.Teacher_LastName}`} secondary={value?.Major} />
@@ -207,7 +225,12 @@ export default function School({forwardedRef}){
                                         listData[index].length !== 0 ? 
                                         listData[index].map((value1, index1) => {
                                             return(
-                                                <ListItem key={`teacherDetailNO${index1}`} style={value1.Teacher_id === selectTeacher.Teacher_id ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius: '0.5rem' } : { borderRadius: '0.5rem' }} button onClick={() => setSelectTeacher(value1)}>
+                                                <ListItem key={`teacherDetailNO${index1}`} style={value1.Teacher_id === selectTeacher.Teacher_id ? { backgroundColor: "rgba(255, 215, 0, 0.5)", borderRadius: '0.5rem' } : { borderRadius: '0.5rem' }} button onClick={() => {
+                                                    setSelectTeacher(value1)
+                                                    if(!mobile){
+                                                        setOpen(true)
+                                                    }
+                                                }}>
                                                     <ListItemIcon>
                                                         <AccountCircleIcon/>
                                                     </ListItemIcon>
@@ -233,7 +256,8 @@ export default function School({forwardedRef}){
                     </Paper>
                 </div>
             </Grid>
-            <Grid item xs={3} style={{height:'100%',marginTop:'2rem'}}>
+            {mobile ?
+             <Grid item xs={3} style={{height:'100%',marginTop:'2rem'}}>
                 <Paper style={{marginLeft:'0.25rem',marginRight:'0.75rem', borderRadius:'16px'}}>
                     {selectTeacher && 
                     <div style={{ paddingLeft: '1rem', overflow: 'scroll', maxHeight: '77vh',height:'77vh',width:'100%'}}>
@@ -284,6 +308,102 @@ export default function School({forwardedRef}){
                     }
                 </Paper>
             </Grid>
+            :
+            selectTeacher && 
+            <SwipeableDrawer
+                container={container}
+                anchor="bottom"
+                open={open}
+                onClose={toggleDrawer(false)}
+                onOpen={toggleDrawer(true)}
+                swipeAreaWidth={drawerBleeding}
+                disableSwipeToOpen={false}
+                ModalProps={{
+                    keepMounted: true,
+                }}
+            >
+                <Box
+                    sx={{
+                        px: 2,
+                        pb: 8,
+                        height: '100%',
+                        overflow: 'auto',
+                        borderTopLeftRadius: 8,
+                        borderTopRightRadius: 8,
+                    }}
+                >
+                    <Grid container justifyContent='center'>
+                        <Grid item style={{ marginTop: '1.5rem',display:'flex',justifyContent:'center' }} xs={12}><AccountCircleIcon sx={{ fontSize: '7rem' }} /></Grid>
+                        <Grid item style={{ margin: '2rem',display:'flex',justifyContent:'center' }} xs={12}>
+                            <Typography variant="h5" gutterBottom style={{textAlign:'center'}}>{selectTeacher.Teacher_FirstName} {selectTeacher.Teacher_LastName}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Stack spacing={1} alignItems='center'>
+                                <Stack direction='row' spacing={1}>
+                                    {selectTeacher.Teacher_Phone.length !== 0 &&
+                                        <Chip
+                                            onClick={() => window.open(`tel:${selectTeacher.Teacher_Phone}`)}
+                                            color='primary'
+                                            icon={<LocalPhoneIcon/>}
+                                            label={selectTeacher.Teacher_Phone}
+                                        />
+                                    }
+                                    {String(selectTeacher.Teacher_Email).length !== 0 &&
+                                        <Chip
+                                            onClick={() => window.open(`mailto:${selectTeacher.Teacher_Email}`,'_blank')}
+                                            color='secondary'
+                                            icon={<EmailIcon/>}
+                                            label={selectTeacher.Teacher_Email}
+                                        />
+                                    }
+                                </Stack>
+                                <Stack direction='row' spacing={1}>
+                                    {String(selectTeacher.Teacher_Office).length !== 0 &&
+                                        <Chip
+                                            variant="outlined"
+                                            icon={<LocationOnIcon/>}
+                                            label={<Typography noWrap style={{ maxWidth: '50vw' }}>{selectTeacher.Teacher_Office}</Typography>}
+                                        />
+                                    }
+                                </Stack>
+                                <Stack direction='row' spacing={1}>
+                                    {String(selectTeacher.Teacher_LineId).length !== 0 &&
+                                        <Chip
+                                            variant="outlined"
+                                            color='success'
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(selectTeacher.Teacher_LineId)
+                                                setOpenAlert(true)
+                                            }}
+                                            icon={<img alt='hok1' style={{ height: '1.8rem', width: '1.8rem' }} src="https://img.icons8.com/color/144/000000/line-me.png" />}
+                                            label={<Typography noWrap style={{ maxWidth: '25vw' }}>{selectTeacher.Teacher_LineId}</Typography>}
+                                        />
+                                    }
+                                    {selectTeacher.Teacher_Facebook !== null &&
+                                        <Chip
+                                            variant="outlined"
+                                            color='primary'
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(selectTeacher.Teacher_Facebook)
+                                                setOpenAlert(true)
+                                            }}
+                                            icon={<img alt='hok2' style={{ height: '1.8rem', width: '1.8rem' }} src="https://img.icons8.com/fluency/144/000000/facebook-new.png" />}
+                                            label={<Typography noWrap style={{ maxWidth: '25vw' }}>{selectTeacher.Teacher_Facebook}</Typography>}
+                                        />
+                                    }
+                                </Stack>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                    <br/>
+                    <Collapse in={openAlert}>
+                        <Alert>
+                            คัดลอกเรียบร้อย
+                        </Alert>
+                    </Collapse>
+                </Box>
+            </SwipeableDrawer>
+        }
         </Grid>
     </div>        
     );

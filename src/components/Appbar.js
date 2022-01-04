@@ -148,7 +148,7 @@ export default function Appbar() {
                 // backdropFilter:'blur(19px)'
             }}>
                 <Toolbar>
-                    <div className="left" style={{ color: blue[700]}}>
+                    <div className="left" style={{ color: blue[700],width:'16rem'}}>
                         <b><b style={{ color: '#FFD72B' }}>T</b><b style={{ color: '#4171B9' }}>K</b> Online Center</b>
                     </div>
                     <div className='center'>

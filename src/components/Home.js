@@ -87,7 +87,7 @@ export default function Home(props,{ forwardedRef }) {
             }).then(res => setSelectSubjectName(res.data[0].Subject_name)).catch(err => console.log(err))
         }
         if(user.Teacher_id){
-            getLink(selectSubject.room)
+            getLink(selectSubject?.room)
         }
     },[selectSubject,setSelectSubject])
 
@@ -320,7 +320,7 @@ export default function Home(props,{ forwardedRef }) {
                 <Grid item xs={4}>
                     <div className={classes.paperRightBottom}>
                         {user.Teacher_id ? 
-                            <Paper style={{ marginBottom: '2vh', backgroundColor: '#1B4E9C' }}>
+                            <div style={{ marginBottom: '2vh' }}>
                                 <Grid container justifyContent="center" direction="column">
                                     <Button style={{ width: '100%', backgroundColor: yellow[600], borderRadius: '16px' }} onClick={() => {
                                         if(selectSubject){
@@ -346,7 +346,7 @@ export default function Home(props,{ forwardedRef }) {
                                         <b style={{ color: blue[800] }}>รายชื่อนักเรียน</b>
                                     </Button>
                                 </Grid>
-                            </Paper>
+                            </div>
                             :
                             <Accordion style={{ marginBottom: '2vh', borderRadius:'16px' }}>
                                 <AccordionSummary
