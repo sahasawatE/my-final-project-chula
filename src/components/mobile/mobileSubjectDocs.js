@@ -57,7 +57,6 @@ function a11yProps(index) {
 }
 
 export default function MobileSubjectDocs(props) {
-console.log(props)
     const ngrok = process.env.REACT_APP_NGROK_URL;
     // const api = axios.create({ baseURL: ngrok })
 
