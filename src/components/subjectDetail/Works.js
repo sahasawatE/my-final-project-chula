@@ -188,7 +188,7 @@ export default function Works(props) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
                 {selectSubject ? 
-                    <Button onClick={() => setModalCreateWork(true)} style={{ color:'#4377ED'}}>สร้างงาน</Button>
+                    <Button onClick={() => {setModalCreateWork(true)}} style={{ color:'#4377ED'}}>สร้างงาน</Button>
                     :
                     <Typography style={{width:'100%',display:'flex',justifyContent:'center'}}>เลือกวิชาที่จะแสดง</Typography>
                 }
@@ -578,8 +578,14 @@ export default function Works(props) {
                                                             localStorage.setItem('studentSubmittedWork', JSON.stringify({ student: value, work: selectWork }))
                                                             window.open('/studentWork','_blank');
                                                         }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width:'100%' }}>
-                                                            <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
-                                                            <b style={{ color: 'green' }}>ส่งตามเวลา</b>
+                                                            <div style={{ display: 'flex', justifyContent: 'start', width: '50%' }}>
+                                                                <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
+                                                            </div>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '50%'}}>
+                                                                <Chip variant='outlined' color={value.is_Checked === 'false' ? 'error' : 'success'} label={value.is_Checked === 'false' ? 'ยังไม่ตรวจ' : 'ตรวจแล้ว'} />
+                                                                <b style={{ color: 'grey' }}><b style={value.Student_score <= value.Score / 3 ? { color: 'red' } : value.Student_score <= (value.Score / 3) * 2 ? { color: 'orange' } : { color: 'green' }}>{value.Student_score}</b>{` / ${value.Score}`}</b>
+                                                                <b style={{ color: 'green' }}>ส่งตามเวลา</b>
+                                                            </div>
                                                         </Button>
                                                     }
                                                     {new Date(value.Submit_date) > new Date(selectWork.End) && 
@@ -587,9 +593,15 @@ export default function Works(props) {
                                                             // console.log(value);
                                                             localStorage.setItem('studentSubmittedWork', JSON.stringify({student: value, work: selectWork}))
                                                             window.open('/studentWork', '_blank');
-                                                        }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width:'100%' }}>
-                                                            <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
-                                                            <b style={{ color: 'red' }}>ส่งช้า</b>
+                                                        }} style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'start',width:'50%'}}>
+                                                                <Typography>{value.Student_id} {value.files.length !== 0 && <>({value.files.split('[')[1].split(']')[0].split(',').length} ไฟล์)</>}</Typography>
+                                                            </div>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row',width:'50%' }}>
+                                                                <Chip variant='outlined' color={value.is_Checked === 'false' ? 'error' : 'success'} label={value.is_Checked === 'false' ? 'ยังไม่ตรวจ' : 'ตรวจแล้ว'} />
+                                                                <b style={{ color: 'grey' }}><b style={value.Student_score <= value.Score / 3 ? { color: 'red' } : value.Student_score <= (value.Score / 3) * 2 ? { color: 'orange' } : { color: 'green' }}>{value.Student_score}</b>{` / ${value.Score}`}</b>
+                                                                <b style={{ color: 'red' }}>ส่งช้า</b>
+                                                            </div>
                                                         </Button>
                                                     }
                                                 </div>
@@ -617,6 +629,9 @@ export default function Works(props) {
         const [readMore, setReadMore] = react.useState(false);
         const [studentWorkFiles, setStudentWorkFiles] = react.useState([]);
         const [isSubmit, setIsSubmit] = react.useState(false);
+        const [isChecked, setIsChecked] = react.useState(false);
+        const [comment, setComment] = react.useState('');
+        const [studentScore, setStudentScore] = react.useState('');
         const [studentAddFile, setStudentAddFile] = react.useState([]);
         const [hok, setHok] = react.useState([]);
         const [studentSelectImg, setStudentSelectImg] = react.useState(null);
@@ -675,7 +690,12 @@ export default function Works(props) {
                     api.post('/subject/checkStatusWork',{
                         selectWork : selectWork,
                         Student_id : props.user.Student_id
-                    }).then(res2 => setIsSubmit(res2.data)).catch(err2 => console.log(err2))
+                    }).then(res2 => {
+                        setIsSubmit(res2.data[0].isSubmit)
+                        setIsChecked(res2.data[0].is_Checked)
+                        setComment(res2.data[0].comment)
+                        setStudentScore(res2.data[0].Student_score)
+                    }).catch(err2 => console.log(err2))
                 })
                 .then(studentPrepareWork()).catch(err => console.log(err))
             }
@@ -726,10 +746,16 @@ export default function Works(props) {
                         setStudentPrepareWorkFile([]);
                     }}>
                             <Modal.Header closeButton>
-                                <div style={{display:'flex',flexDirection:'row'}}>
+                                <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>{selectWork.Work_Name}</Typography>
-                                    <div style={{ paddingLeft: '16px', marginTop: '-0.3rem' }}><Chip color={isSubmit ? 'success' : 'error'} variant='outlined' label={isSubmit ? 'ส่งแล้ว' : 'ยังไม่ส่ง'} /></div>
-                                    <Typography style={{ paddingLeft: '16px', color: '#9A9A9A' }}>({selectWork.Score} คะแนน)</Typography>
+                                    <div style={{ paddingLeft: '16px', marginTop: '-0.3rem' }}>
+                                        {isChecked === 'false' ?
+                                            <Chip color={isSubmit ? 'success' : 'error'} variant='outlined' label={isSubmit ? 'ส่งแล้ว' : 'ยังไม่ส่ง'} />
+                                            :
+                                            <Chip color={Number(studentScore) <= Number(selectWork.Score) / 3 ? 'error' : Number(studentScore) <= (Number(selectWork.Score) / 3) * 2 ? 'warning' : 'success'} variant='outlined' label={`${studentScore} / ${selectWork.Score}`} />
+                                        }
+                                    </div>
+                                    {isChecked === 'false' && <Typography style={{ paddingLeft: '16px', color: '#9A9A9A' }}>({selectWork.Score} คะแนน)</Typography>}
                                 </div>
                             </Modal.Header>
                         <Modal.Body style={{ display: 'flex', justifyContent: 'center' }}>
@@ -876,6 +902,14 @@ export default function Works(props) {
                                         );
                                     })}
                                 </div>
+                                {isChecked !== 'false' &&
+                                    <div style={{ maxHeight: '20vh', overflow: 'scroll', paddingTop:'2rem' }}>
+                                        <Typography>ความคิดเห็นของครู</Typography>
+                                        <div style={{width:'85%',margin:'auto'}}>
+                                            <Typography>{comment}</Typography>
+                                        </div>
+                                    </div>
+                                }
                             </Grid>
                         </Modal.Body>
                         <Modal.Footer style={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -894,46 +928,49 @@ export default function Works(props) {
                             {studentPrepareWorkFile.length === 0 ?
                             <Button variant="outlined" disabled>ส่ง</Button>
                             :
-                            isSubmit ? 
-                                <Button color='primary' variant='outlined' onClick={() => {
-                                    setIsSubmit(false);
-                                    api.post('/student/editWork',{
-                                        Subject_id: props.subject.Subject_id,
-                                        Student_id: props.user.Student_id,
-                                        Room_id: props.subject.Room_id,
-                                        Teacher_id: props.subject.Teacher_id,
-                                        workName: selectWork.Work_Name,
-                                        score: selectWork.Score
-                                    }).catch(err => console.log(err))
-                                }}>แก้ไข</Button>
-                                :
-                                <Button variant="outlined" color="primary" onClick={() => {
-                                    if(studentAddFile.length !== 0){
-                                        alert('ต้องอัพโหลดไฟล์ก่อนส่งเสมอ')
-                                    }
-                                    else{
-                                        if(new Date(selectWork.End) < new Date()){
-                                            alert('ส่งช้า')
-                                        }
+                                    isChecked !== 'false' ?
+                                        null
+                                        :
+                                        isSubmit === 'true' ?
+                                            <Button color='primary' variant='outlined' onClick={() => {
+                                                setIsSubmit(false);
+                                                api.post('/student/editWork', {
+                                                    Subject_id: props.subject.Subject_id,
+                                                    Student_id: props.user.Student_id,
+                                                    Room_id: props.subject.Room_id,
+                                                    Teacher_id: props.subject.Teacher_id,
+                                                    workName: selectWork.Work_Name,
+                                                    score: selectWork.Score
+                                                }).catch(err => console.log(err))
+                                            }}>แก้ไข</Button>
+                                            :
+                                            <Button variant="outlined" color="primary" onClick={() => {
+                                                if (studentAddFile.length !== 0) {
+                                                    alert('ต้องอัพโหลดไฟล์ก่อนส่งเสมอ')
+                                                }
+                                                else {
+                                                    if (new Date(selectWork.End) < new Date()) {
+                                                        alert('ส่งช้า')
+                                                    }
 
-                                        api.post('/student/submitwork', {
-                                            Subject_id: props.subject.Subject_id,
-                                            Student_id: props.user.Student_id,
-                                            Room_id: props.subject.Room_id,
-                                            Teacher_id: props.subject.Teacher_id,
-                                            workName: selectWork.Work_Name,
-                                            score: selectWork.Score
-                                        }).then(() => {
-                                            alert('ส่งเรียบร้อย')
-                                        }).then(() => {
-                                            setStudentOpenWork(false);
-                                            setReadMore(false);
-                                            setSelectWork(null);
-                                            setStudentWorkFiles([]);
-                                            setStudentPrepareWorkFile([]);
-                                        }).catch(err => console.log(err))
-                                    }
-                                }}>ส่ง</Button>
+                                                    api.post('/student/submitwork', {
+                                                        Subject_id: props.subject.Subject_id,
+                                                        Student_id: props.user.Student_id,
+                                                        Room_id: props.subject.Room_id,
+                                                        Teacher_id: props.subject.Teacher_id,
+                                                        workName: selectWork.Work_Name,
+                                                        score: selectWork.Score
+                                                    }).then(() => {
+                                                        alert('ส่งเรียบร้อย')
+                                                    }).then(() => {
+                                                        setStudentOpenWork(false);
+                                                        setReadMore(false);
+                                                        setSelectWork(null);
+                                                        setStudentWorkFiles([]);
+                                                        setStudentPrepareWorkFile([]);
+                                                    }).catch(err => console.log(err))
+                                                }
+                                            }}>ส่ง</Button>
                             }
                         </Modal.Footer>
                     </Modal>

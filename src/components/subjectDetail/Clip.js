@@ -1,6 +1,7 @@
 import react from 'react';
 import * as FilePond from 'react-filepond';
 import axios from 'axios';
+import { useMediaQuery } from '@mui/material';
 import { socketContext } from '../../socketContext';
 import { Grid, List, IconButton } from '@material-ui/core';
 import { Button, Tabs, Tab, Typography, ListItem, ListItemButton, ListItemText, ListItemIcon } from '@mui/material';
@@ -18,6 +19,7 @@ import 'filepond/dist/filepond.min.css';
 require('dotenv').config()
 
 export default function Clip(props) {
+    const mobile = useMediaQuery('(min-width:600px)');
     FilePond.registerPlugin(FilePondPluginFileValidateType)
     const ngrok = process.env.REACT_APP_NGROK_URL;
     const api = axios.create({ baseURL: ngrok })
@@ -140,9 +142,14 @@ export default function Clip(props) {
                                                     </IconButton >
                                                 }>
                                                 <ListItemButton onClick={() => {
-                                                    setVideoModal(true)
-                                                    setVideoPath(value.File_Path)
-                                                    setSelectVideo(value.Clip_Name)
+                                                    if(mobile){
+                                                        setVideoModal(true)
+                                                        setVideoPath(value.File_Path)
+                                                        setSelectVideo(value.Clip_Name)
+                                                    }
+                                                    else{
+                                                        alert('กรุณาใช้อุปกรณ์ที่มีขนาดใหญ่กว่านี้')
+                                                    }
                                                 }}>
                                                     <ListItemIcon style={{ color:'#008000'}}><PlayCircleOutlineIcon /></ListItemIcon>
                                                     <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
@@ -195,9 +202,14 @@ export default function Clip(props) {
                                                     <Grid key={`clipNo${index}`} container direction='row'>
                                                         <Grid item xs={12} style={{ display: 'flex', flexDirection: 'row' }}>
                                                             <ListItem button onClick={() => {
-                                                                setVideoModal(true)
-                                                                setVideoPath(value.File_Path)
-                                                                setSelectVideo(value.Clip_Name)
+                                                                if(mobile){
+                                                                    setVideoModal(true)
+                                                                    setVideoPath(value.File_Path)
+                                                                    setSelectVideo(value.Clip_Name)
+                                                                }
+                                                                else{
+                                                                    alert('กรุณาใช้อุปกรณ์ที่มัขนาดใหญ่')
+                                                                }
                                                             }}>
                                                                 <div style={{ color: 'green' }}><PlayCircleOutlineIcon /></div>
                                                                 <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
@@ -442,9 +454,14 @@ export default function Clip(props) {
                                                                     </IconButton >
                                                                 }>
                                                                 <ListItemButton onClick={() => {
-                                                                    setVideoModal(true)
-                                                                    setVideoPath(value.File_Path)
-                                                                    setSelectVideo(value.Clip_Name)
+                                                                    if(mobile){
+                                                                        setVideoModal(true)
+                                                                        setVideoPath(value.File_Path)
+                                                                        setSelectVideo(value.Clip_Name)
+                                                                    }
+                                                                    else{
+                                                                        alert('กรุณาใช้อุปกรณ์ที่มีขนาดใหญ่กว่านี้')
+                                                                    }
                                                                 }}>
                                                                     <ListItemIcon style={{ color: '#008000' }}><PlayCircleOutlineIcon /></ListItemIcon>
                                                                     <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>
@@ -466,9 +483,14 @@ export default function Clip(props) {
                                                     <Grid key={`clipNo${index}`} container direction='row'>
                                                         <Grid item xs={12} style={{ display: 'flex', flexDirection: 'row' }}>
                                                             <ListItem button onClick={() => {
-                                                                setVideoModal(true)
-                                                                setVideoPath(value.File_Path)
-                                                                setSelectVideo(value.Clip_Name)
+                                                                if(mobile){
+                                                                    setVideoModal(true)
+                                                                    setVideoPath(value.File_Path)
+                                                                    setSelectVideo(value.Clip_Name)
+                                                                }
+                                                                else{
+                                                                    alert('กรุณาใช้อุปกรณ์ที่มีัขนาดใหญ่')
+                                                                }
                                                             }}>
                                                                 <div style={{ color: 'green' }}><PlayCircleOutlineIcon /></div>
                                                                 <ListItemText style={{ paddingLeft: '1rem' }} >{value.Clip_Name}</ListItemText>

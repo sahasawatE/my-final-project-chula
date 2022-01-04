@@ -3,7 +3,7 @@ import Clip from './Clip';
 import Works from './Works';
 import axios from 'axios';
 import React from 'react';
-import {Grid} from '@material-ui/core'
+import { Grid } from '@material-ui/core'
 import { Tab, Tabs, Box } from '@mui/material';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';

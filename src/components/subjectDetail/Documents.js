@@ -158,7 +158,7 @@ export default function Documents(props){
     }
 
     react.useEffect(() => {
-        setEnterFolder('')
+        setEnterFolder(false)
         setFolders([]);
         if(props.user.Teacher_id){
             setRole('teacher');
@@ -210,7 +210,7 @@ export default function Documents(props){
         if(role === 'teacher'){
             return(
                 <Grid container justifyContent='center' direction='column'>
-                    <Button variant='text' style={{ width: '100%', color: '#4377ED' }} onClick={() => setCreateContent(true)}>สร้างเนื้อหา</Button>
+                    <Button variant='text' style={{ width: '100%', color: '#4377ED' }} onClick={() => {setCreateContent(true)}}>สร้างเนื้อหา</Button>
                     <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', width: '100%'}}>
                         {folders.length === 0 ?
                             <Typography>ว่างเปล่า</Typography>
