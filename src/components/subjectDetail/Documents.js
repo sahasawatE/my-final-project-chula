@@ -233,16 +233,16 @@ export default function Documents(props){
                                                 </IconButton >
                                             }>
                                                 <ListItemButton onClick={() => {
-                                                        getFile(value.File_Path.split('/').at(-1));
+                                                    getFile(value.File_Path.split('\\').pop().split('/').pop());
                                                 }}>
                                                     <InsertDriveFileIcon style={{color:blue[800]}}/>
-                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('/').at(-1)}</ListItemText>
+                                                    <ListItemText style={{ paddingLeft: '1rem' }} >{value.File_Path.split('\\').pop().split('/').pop()}</ListItemText>
                                                 </ListItemButton>
                                             </ListItem>
                                         );
                                     })}
                                     {folders.map((value, index) => {
-                                        if (value.split('/').at(-1) !== 'noFolder') {
+                                        if (value.split('\\').pop().split('/').pop() !== 'noFolder') {
                                             return (
                                                 <ListItem
                                                 key={`folderNo${index}`}
@@ -256,10 +256,10 @@ export default function Documents(props){
                                                     </IconButton >
                                                 }>
                                                     <ListItemButton onClick={() => {
-                                                        enterF(value.split('/').at(-1))
+                                                        enterF(value.split('\\').pop().split('/').pop())
                                                     }}>
                                                         <FolderIcon style={{color:grey[600]}}/>
-                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
+                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('\\').pop().split('/').pop()}</ListItemText>
                                                     </ListItemButton>
                                                 </ListItem>
                                             );
@@ -350,7 +350,7 @@ export default function Documents(props){
                                                     }}
                                                     onprocessfilerevert={(f) => {
                                                         filesInFolder.map(v => {
-                                                            if(v.File_Path.split('/').at(-1) === f.file.name){
+                                                            if(v.File_Path.split('\\').pop().split('/').pop() === f.file.name){
                                                                 deleteHandle(v)
                                                             }
                                                             return null
@@ -411,7 +411,7 @@ export default function Documents(props){
                                             }}
                                             onprocessfilerevert={(f) => {
                                                 filesInFolder.map(v => {
-                                                    if (v.File_Path.split('/').at(-1) === f.file.name) {
+                                                    if (v.File_Path.split('\\').pop().split('/').pop() === f.file.name) {
                                                         deleteHandle(v)
                                                         setFilesInFolder(filesInFolder.filter(e => e !== v))
                                                     }
