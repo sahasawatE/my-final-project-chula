@@ -89,7 +89,7 @@ export default function MobileClip(props) {
             var f = [];
             if (res2.data.length !== 0) {
                 res2.data.map(v => {
-                    if (v.split('/').at(-1) !== 'noFolder') {
+                    if (v.split('\\').pop().split('/').pop() !== 'noFolder') {
                         f.push(v)
                     }
                     return null
@@ -177,13 +177,13 @@ export default function MobileClip(props) {
                                                             path: value
                                                         })
                                                             .then(res => setClipInSelectFolder(res.data))
-                                                            .then(setSelectClipFolder(value.split('/').at(-1)))
+                                                            .then(setSelectClipFolder(value.split('\\').pop().split('/').pop()))
                                                             .catch(err => console.log(err))
                                                         setClipFolderModal(true)
                                                         setOpen(false)
                                                     }}>
                                                         <ListItemIcon><FolderIcon /></ListItemIcon>
-                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
+                                                        <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('\\').pop().split('/').pop()}</ListItemText>
                                                     </ListItemButton>
                                                 </ListItem>
                                             );
@@ -230,13 +230,13 @@ export default function MobileClip(props) {
                                                                     path: value
                                                                 })
                                                                     .then(res => setClipInSelectFolder(res.data))
-                                                                    .then(setSelectClipFolder(value.split('/').at(-1)))
+                                                                    .then(setSelectClipFolder(value.split('\\').pop().split('/').pop()))
                                                                     .catch(err => console.log(err))
                                                                 setClipFolderModal(true)
                                                                 setOpen(false)
                                                             }}>
                                                                 <div style={{ color: 'gray' }}><FolderIcon /></div>
-                                                                <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('/').at(-1)}</ListItemText>
+                                                                <ListItemText style={{ paddingLeft: '1rem' }} >{value.split('\\').pop().split('/').pop()}</ListItemText>
                                                             </ListItem>
                                                         </Grid>
                                                     </Grid>
@@ -523,7 +523,7 @@ export default function MobileClip(props) {
                     <Modal.Body>
                         {videoPath.length !== 0 &&
                             <video id="videoPlayer" width="100%" controls autoPlay>
-                                <source src={`${ngrok}teacher/video/${videoPath.split('/').at(-2)}/${videoPath.split('/').at(-1)}/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}`} type="video/mp4" />
+                                <source src={`${ngrok}teacher/video/${videoPath.split('/').at(-2)}/${videoPath.split('\\').pop().split('/').pop()}/${props.subject.Subject_id}/${props.subject.Teacher_id}/${props.subject.Room_id}`} type="video/mp4" />
                             </video>
                         }
                     </Modal.Body>
